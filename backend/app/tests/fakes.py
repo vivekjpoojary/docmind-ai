@@ -8,10 +8,12 @@ vocabulary with a chunk will score higher than an unrelated one.
 """
 
 import hashlib
+import re
 
 import numpy as np
 
 VECTOR_DIM = 32
+_WORD_RE = re.compile(r"[a-z0-9]+")
 
 
 class FakeEmbeddingProvider:
@@ -19,7 +21,10 @@ class FakeEmbeddingProvider:
 
     def _embed_one(self, text: str) -> list[float]:
         vec = np.zeros(VECTOR_DIM, dtype="float32")
-        for word in text.lower().split():
+        # Strip punctuation so "applications?" and "applications." match
+        # "applications" — a real embedding model handles this naturally
+        # via subword tokenization; this fake needs it done explicitly.
+        for word in _WORD_RE.findall(text.lower()):
             h = int(hashlib.md5(word.encode()).hexdigest(), 16)
             vec[h % VECTOR_DIM] += 1.0
         return vec.tolist()

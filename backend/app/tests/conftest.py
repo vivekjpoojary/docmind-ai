@@ -48,6 +48,13 @@ def _fake_rag_backends(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "FAISS_INDEX_DIR", str(tmp_path / "faiss_index"))
     monkeypatch.setattr(settings, "UPLOAD_DIR", str(tmp_path / "uploads"))
 
+    # The fake embedder is a crude bag-of-words hash, not a real semantic
+    # model — it can't recognize "isolate" and "isolates" as related the way
+    # a real embedding model would, so raw similarity scores run lower than
+    # production. Lower the threshold here so these tests verify the
+    # retrieval/citation/answer *pipeline wiring*, not similarity tuning.
+    monkeypatch.setattr(settings, "CONFIDENCE_THRESHOLD", 0.1)
+
 
 async def _override_get_db() -> AsyncGenerator[AsyncSession, None]:
     async with TestSessionLocal() as session:
@@ -72,4 +79,3 @@ async def auth_headers(client: AsyncClient) -> dict[str, str]:
     r = await client.post("/api/v1/login", json={"email": payload["email"], "password": payload["password"]})
     token = r.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
-

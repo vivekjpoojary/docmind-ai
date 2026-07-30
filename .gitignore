@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Env
+.env
+*.env.local
+
+# Data / runtime artifacts
+backend/data/
+backend/logs/
+*.db
+*.sqlite3
+
+# FAISS / Chroma
+faiss_index/
+chroma/
+
+# Node / frontend
+node_modules/
+dist/
+frontend/.vite/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/

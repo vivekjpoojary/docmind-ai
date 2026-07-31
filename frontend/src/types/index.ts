@@ -16,14 +16,13 @@ export interface AuthTokens {
 export interface Document {
   id: string;
   filename: string;
-  original_filename: string;
   file_type: string;
-  file_size: number;
-  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  file_size_bytes: number;
+  status: 'ready' | 'failed' | 'processing' | 'pending';
   chunk_count: number;
   page_count: number;
-  created_at: string;
-  updated_at: string;
+  uploaded_at: string;
+  processed_at?: string | null;
   error_message?: string | null;
 }
 
@@ -54,14 +53,19 @@ export interface Conversation {
   messages?: Message[];
 }
 
-export interface SearchResult {
-  chunk_id: string;
+export interface SearchResultItem {
   document_id: string;
   filename: string;
-  page_number: number;
-  content: string;
+  page_number: number | null;
+  excerpt: string;
   score: number;
-  search_type: 'semantic' | 'keyword' | 'hybrid';
+  match_type: 'semantic' | 'keyword' | 'both';
+}
+
+export interface SearchResponse {
+  query: string;
+  mode: string;
+  results: SearchResultItem[];
 }
 
 export interface UserAnalytics {

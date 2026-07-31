@@ -4,7 +4,8 @@ import {
   AuthTokens,
   Document,
   Conversation,
-  SearchResult,
+  SearchResultItem,
+  SearchResponse,
   UserAnalytics,
   SystemAnalytics,
   AdminUserListItem,
@@ -176,14 +177,14 @@ export const searchApi = {
     mode: 'semantic' | 'keyword' | 'hybrid' = 'hybrid',
     limit: number = 10,
     documentIds?: string[]
-  ): Promise<SearchResult[]> => {
-    const res = await api.post<SearchResult[]>('/search', {
+  ): Promise<SearchResultItem[]> => {
+    const res = await api.post<SearchResponse>('/search', {
       query,
       mode,
-      limit,
+      top_k: limit,
       document_ids: documentIds,
     });
-    return res.data;
+    return res.data.results || [];
   },
 };
 

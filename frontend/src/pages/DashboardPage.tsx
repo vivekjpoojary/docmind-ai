@@ -185,10 +185,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
                     </div>
                     <div className="truncate">
                       <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
-                        {doc.original_filename}
+                        {doc.filename}
                       </p>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                        {doc.chunk_count} chunks • {formatBytes(doc.file_size)}
+                        {doc.chunk_count} chunks • {formatBytes(doc.file_size_bytes)}
                       </p>
                     </div>
                   </div>

@@ -42,7 +42,7 @@ export const DocumentsPage: React.FC = () => {
 
     try {
       const doc = await documentApi.upload(file);
-      setSuccess(`Successfully uploaded and indexed "${doc.original_filename}" (${doc.chunk_count} passages chunked)`);
+      setSuccess(`Successfully uploaded and indexed "${doc.filename}" (${doc.chunk_count} passages chunked)`);
       await fetchDocuments();
     } catch (err: any) {
       console.error('Upload failed:', err);
@@ -88,8 +88,8 @@ export const DocumentsPage: React.FC = () => {
     }
   };
 
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 B';
+  const formatBytes = (bytes?: number) => {
+    if (!bytes || bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -163,7 +163,7 @@ export const DocumentsPage: React.FC = () => {
               {uploading ? 'Processing & Vectorizing File...' : 'Drag & drop your document here'}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Supports PDF, DOCX, and TXT files up to 20MB
+              Supports PDF, DOCX, and TXT files up to 25MB
             </p>
           </div>
 
@@ -222,33 +222,33 @@ export const DocumentsPage: React.FC = () => {
                         <div className="p-2 bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 rounded-lg">
                           <FileText className="w-4 h-4" />
                         </div>
-                        <span className="truncate max-w-xs" title={doc.original_filename}>
-                          {doc.original_filename}
+                        <span className="truncate max-w-xs" title={doc.filename}>
+                          {doc.filename || 'Untitled'}
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className="px-2 py-0.5 rounded uppercase text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                        {doc.file_type}
+                        {doc.file_type || doc.filename?.split('.').pop() || 'file'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-slate-500 dark:text-slate-400 text-xs">
-                      {formatBytes(doc.file_size)}
+                      {formatBytes(doc.file_size_bytes)}
                     </td>
                     <td className="px-6 py-4 text-slate-700 dark:text-slate-300 font-semibold text-xs">
                       {doc.chunk_count} passages
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
-                        <CheckCircle2 className="w-3 h-3 mr-1" /> Ready
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 capitalize">
+                        <CheckCircle2 className="w-3 h-3 mr-1" /> {doc.status || 'Ready'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-slate-500 dark:text-slate-400 text-xs">
-                      {new Date(doc.created_at).toLocaleDateString()}
+                      {doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : 'Just now'}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button
-                        onClick={() => handleDelete(doc.id, doc.original_filename)}
+                        onClick={() => handleDelete(doc.id, doc.filename)}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors"
                         title="Delete Document & Remove Vectors"
                       >

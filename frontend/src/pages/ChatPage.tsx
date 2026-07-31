@@ -223,7 +223,7 @@ export const ChatPage: React.FC = () => {
                             : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                         }`}
                       >
-                        <span className="truncate max-w-[140px]">{doc.original_filename}</span>
+                        <span className="truncate max-w-[140px]">{doc.filename}</span>
                         {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-sky-500 shrink-0" />}
                       </button>
                     );

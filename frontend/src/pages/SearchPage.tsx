@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Search, FileText } from 'lucide-react';
 import { searchApi } from '../services/api';
-import { SearchResult } from '../types';
+import { SearchResultItem } from '../types';
 
 export const SearchPage: React.FC = () => {
   const [query, setQuery] = useState('');
   const [mode, setMode] = useState<'hybrid' | 'semantic' | 'keyword'>('hybrid');
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [results, setResults] = useState<SearchResultItem[]>([]);
   const [searching, setSearching] = useState(false);
   const [searched, setSearched] = useState(false);
 
@@ -108,17 +108,17 @@ export const SearchPage: React.FC = () => {
                       {res.filename}
                     </span>
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                      Page {res.page_number}
+                      Page {res.page_number || 1}
                     </span>
                   </div>
 
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
-                    {(res.score * 100).toFixed(0)}% Match
+                    {(res.score * 100).toFixed(0)}% Match ({res.match_type})
                   </span>
                 </div>
 
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed italic bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                  "{res.content}"
+                  "{res.excerpt}"
                 </p>
               </div>
             ))}

@@ -27,12 +27,14 @@ export interface Document {
 }
 
 export interface Citation {
-  chunk_id: string;
+  chunk_id?: string;
   document_id: string;
   filename: string;
-  page_number: number;
+  page_number?: number;
   content: string;
-  similarity: number;
+  similarity?: number;
+  excerpt?: string;
+  relevance_score?: number;
 }
 
 export interface Message {

@@ -13,6 +13,8 @@ Flow:
     7. Persist the exchange to conversation history
 """
 
+import json
+from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -44,7 +46,6 @@ class RAGService:
         raw_results = store.search(query_vector, top_k=top_k)
 
         # ---- 2. Confidence gate (hallucination guard) ----
-        print(f"DEBUG raw_results={raw_results} threshold={settings.CONFIDENCE_THRESHOLD}")
         relevant_results = [
             (vector_id, score) for vector_id, score in raw_results
             if score >= settings.CONFIDENCE_THRESHOLD
@@ -52,16 +53,14 @@ class RAGService:
 
         vector_ids = [vid for vid, _ in relevant_results]
         chunk_rows = await self.documents.get_chunks_by_vector_ids(vector_ids)
-        # Preserve retrieval order and attach scores
         score_by_vector_id = dict(relevant_results)
         chunk_rows.sort(key=lambda c: score_by_vector_id.get(c.vector_id, 0), reverse=True)
 
-        # Optional: restrict to specific document_ids if the caller asked for it
         if request.document_ids:
             allowed = set(request.document_ids)
             chunk_rows = [c for c in chunk_rows if c.document_id in allowed]
 
-        # ---- 3. Build citations (need document filenames) ----
+        # ---- 3. Build citations ----
         doc_cache: dict[str, Document] = {}
         sources: list[SourceCitation] = []
         context_blocks: list[str] = []
@@ -73,7 +72,7 @@ class RAGService:
                     doc_cache[chunk.document_id] = doc
             doc = doc_cache.get(chunk.document_id)
             if doc is None:
-                continue  # document was deleted between indexing and now
+                continue
 
             score = score_by_vector_id.get(chunk.vector_id, 0.0)
             sources.append(
@@ -106,7 +105,6 @@ class RAGService:
             answer = NOT_FOUND_MESSAGE
 
         # ---- 5. Confidence score ----
-        # Average similarity of the chunks actually used, scaled to 0-100.
         if sources:
             avg_score = sum(s.relevance_score for s in sources) / len(sources)
             confidence = round(min(avg_score, 1.0) * 100, 1)
@@ -142,3 +140,24 @@ class RAGService:
             conversation_id=conversation_id,
             found_relevant_context=found_relevant_context,
         )
+
+    async def ask_stream(self, owner_id: str, request: AskRequest) -> AsyncGenerator[str, None]:
+        # First send the full metadata AskResponse minus answer text as initial SSE event
+        response = await self.ask(owner_id, request)
+        
+        meta = {
+            "conversation_id": response.conversation_id,
+            "confidence": response.confidence,
+            "found_relevant_context": response.found_relevant_context,
+            "sources": [s.model_dump() for s in response.sources],
+        }
+        yield f"data: {json.dumps({'type': 'meta', 'data': meta})}\n\n"
+
+        # Now stream answer tokens
+        full_text = response.answer
+        words = full_text.split(" ")
+        for i, word in enumerate(words):
+            chunk = word + (" " if i < len(words) - 1 else "")
+            yield f"data: {json.dumps({'type': 'token', 'token': chunk})}\n\n"
+
+        yield "data: [DONE]\n\n"

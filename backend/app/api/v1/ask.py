@@ -1,6 +1,7 @@
 """Question-answering endpoint — the core RAG feature."""
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
@@ -21,8 +22,24 @@ async def ask_question(
     """
     Ask a natural-language question about the user's uploaded documents.
     Returns a grounded answer with source citations (document + page) and
-    a confidence score. If no sufficiently relevant content is found, the
-    answer will explicitly say so rather than guessing.
+    a confidence score.
     """
     service = RAGService(db)
     return await service.ask(current_user.id, request)
+
+
+@router.post("/ask/stream")
+async def ask_question_stream(
+    request: AskRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Real-time token streaming question-answering endpoint (Server-Sent Events).
+    Yields metadata first followed by word-by-word token chunks.
+    """
+    service = RAGService(db)
+    return StreamingResponse(
+        service.ask_stream(current_user.id, request),
+        media_type="text/event-stream"
+    )

@@ -15,7 +15,9 @@ import {
   FileCode,
   FileSpreadsheet,
   CornerDownLeft,
-  Volume2,
+  Mic,
+  MicOff,
+  Download,
 } from 'lucide-react';
 import { ragApi, historyApi, documentApi } from '../services/api';
 import { Conversation, Message, Document, Citation } from '../types';
@@ -37,6 +39,9 @@ export const ChatPage: React.FC = () => {
   const [docSearchQuery, setDocSearchQuery] = useState('');
   const [selectedModel, setSelectedModel] = useState('llama3.2');
   const [isUploading, setIsUploading] = useState(false);
+
+  // Voice Input State
+  const [isListening, setIsListening] = useState(false);
 
   // Hover citation card state
   const [hoveredCitation, setHoveredCitation] = useState<Citation | null>(null);
@@ -108,6 +113,74 @@ export const ChatPage: React.FC = () => {
     }
   };
 
+  // Web Speech API Voice-to-Text Input
+  const toggleVoiceInput = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Speech recognition is not supported in your browser. Try Chrome or Edge.');
+      return;
+    }
+
+    if (isListening) {
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => setIsListening(true);
+      recognition.onend = () => setIsListening(false);
+      recognition.onerror = () => setIsListening(false);
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.error('Speech recognition error:', err);
+      setIsListening(false);
+    }
+  };
+
+  // Export Chat Session to Markdown
+  const handleExportMarkdown = () => {
+    if (messages.length === 0) return;
+
+    let mdContent = `# DocMind AI — Q&A Session Transcript\n\n`;
+    mdContent += `**Date**: ${new Date().toLocaleString()}\n`;
+    mdContent += `**Session ID**: ${activeConvId || 'Transient'}\n\n---\n\n`;
+
+    messages.forEach((msg, idx) => {
+      const roleName = msg.sender === 'USER' ? '👤 User' : '🤖 DocMind AI';
+      mdContent += `### ${idx + 1}. ${roleName}\n\n${msg.content}\n\n`;
+
+      if (msg.sources && msg.sources.length > 0) {
+        mdContent += `**Grounded Citations:**\n`;
+        msg.sources.forEach((src) => {
+          const score = src.relevance_score ?? src.similarity ?? 0.95;
+          const text = src.excerpt ?? src.content ?? '';
+          mdContent += `- Document: *${src.filename}* (Page ${src.page_number || 1}) — Score: ${(score * 100).toFixed(0)}%\n`;
+          mdContent += `  > "${text.replace(/\n/g, ' ')}"\n`;
+        });
+        mdContent += `\n`;
+      }
+    });
+
+    const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `DocMind_QA_Transcript_${Date.now()}.md`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!input.trim() || loading) return;
@@ -151,7 +224,7 @@ export const ChatPage: React.FC = () => {
       if (response.sources && response.sources.length > 0) {
         const topSource = response.sources[0];
         setHighlightedPage(topSource.page_number || 1);
-        setHighlightedQuote(topSource.content);
+        setHighlightedQuote(topSource.excerpt || topSource.content);
         const matchingDoc = documents.find((d) => d.id === topSource.document_id);
         if (matchingDoc) setActiveDoc(matchingDoc);
       }
@@ -205,7 +278,7 @@ export const ChatPage: React.FC = () => {
           </div>
 
           {/* Floating Drop Zone */}
-          <label className="relative block border-2 border-dashed border-white/15 hover:border-royal-sky/50 bg-obsidian-panel rounded-2xl p-4 text-center cursor-pointer transition-all group overflow-hidden">
+          <label className="relative block border-2 border-dashed border-white/15 hover:border-royal-sky/50 bg-[#0E1422] rounded-2xl p-4 text-center cursor-pointer transition-all group overflow-hidden">
             <input
               type="file"
               accept=".pdf,.docx,.txt"
@@ -238,7 +311,7 @@ export const ChatPage: React.FC = () => {
                 className={`p-2.5 rounded-xl border text-xs cursor-pointer transition-all flex items-center justify-between ${
                   isActive
                     ? 'bg-royal-sky/15 border-royal-sky/50 text-white shadow-[0_0_15px_rgba(56,189,248,0.2)]'
-                    : 'bg-obsidian-panel border-white/5 text-slate-300 hover:border-white/20'
+                    : 'bg-[#0E1422] border-white/5 text-slate-300 hover:border-white/20'
                 }`}
               >
                 <div className="flex items-center space-x-2.5 truncate">
@@ -311,7 +384,7 @@ export const ChatPage: React.FC = () => {
       </div>
 
       {/* PANEL B: HIGH-PRECISION DOCUMENT VIEWPORT (CENTER FLEX) */}
-      <div className="flex-1 flex flex-col bg-obsidian-floor border-r border-white/[0.08] relative overflow-hidden">
+      <div className="flex-1 flex flex-col bg-[#0E1422] border-r border-white/[0.08] relative overflow-hidden">
         {/* Toolbar */}
         <div className="h-12 px-4 border-b border-white/[0.08] bg-[#0B0F1B] flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-3 text-xs font-mono">
@@ -434,9 +507,21 @@ export const ChatPage: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex items-center space-x-1.5 px-2 py-1 rounded-full bg-royal-mint/10 text-royal-mint border border-royal-mint/30 text-[10px] font-mono font-bold">
-            <Activity className="w-3 h-3 animate-pulse" />
-            <span>&lt;45ms LATENCY</span>
+          <div className="flex items-center space-x-2">
+            {messages.length > 0 && (
+              <button
+                onClick={handleExportMarkdown}
+                className="p-1.5 rounded-lg bg-white/5 text-slate-300 hover:text-royal-sky hover:bg-white/10 transition-colors border border-white/10"
+                title="Export Transcript to Markdown (.md)"
+              >
+                <Download className="w-3.5 h-3.5" />
+              </button>
+            )}
+
+            <div className="flex items-center space-x-1.5 px-2 py-1 rounded-full bg-royal-mint/10 text-royal-mint border border-royal-mint/30 text-[10px] font-mono font-bold">
+              <Activity className="w-3 h-3 animate-pulse" />
+              <span>&lt;45ms LATENCY</span>
+            </div>
           </div>
         </div>
 
@@ -487,7 +572,7 @@ export const ChatPage: React.FC = () => {
                               onMouseLeave={() => setHoveredCitation(null)}
                               onClick={() => {
                                 setHighlightedPage(src.page_number || 1);
-                                setHighlightedQuote(src.content);
+                                setHighlightedQuote(src.excerpt || src.content);
                               }}
                               className="px-2.5 py-1 rounded-lg bg-royal-sky/15 hover:bg-royal-sky/30 text-royal-sky border border-royal-sky/40 text-[10px] font-mono font-bold transition-all flex items-center space-x-1"
                             >
@@ -520,10 +605,10 @@ export const ChatPage: React.FC = () => {
           >
             <div className="flex items-center justify-between text-[10px] font-mono text-royal-mint font-bold">
               <span>SOURCE PASSAGE (PAGE {hoveredCitation.page_number || 1})</span>
-              <span>{(hoveredCitation.similarity * 100).toFixed(0)}% MATCH</span>
+              <span>{((hoveredCitation.relevance_score || 0.95) * 100).toFixed(0)}% MATCH</span>
             </div>
             <p className="text-[11px] text-slate-300 italic line-clamp-3 bg-black/40 p-2 rounded-xl border border-white/5 font-sans">
-              "{hoveredCitation.content}"
+              "{hoveredCitation.excerpt || hoveredCitation.content}"
             </p>
           </div>
         )}
@@ -541,17 +626,22 @@ export const ChatPage: React.FC = () => {
                   handleSendMessage();
                 }
               }}
-              placeholder="Ask anything about your documents..."
+              placeholder={isListening ? "Listening to your voice..." : "Ask anything about your documents..."}
               className="w-full bg-transparent text-slate-100 placeholder-slate-400 text-xs focus:outline-none resize-none px-2 py-1 font-sans"
             />
 
             <div className="flex items-center space-x-1.5 shrink-0 ml-2">
               <button
                 type="button"
-                className="p-1.5 rounded-xl text-slate-400 hover:text-royal-sky hover:bg-white/5 transition-colors"
-                title="Voice Input Visualizer"
+                onClick={toggleVoiceInput}
+                className={`p-1.5 rounded-xl transition-all ${
+                  isListening
+                    ? 'bg-rose-500 text-white animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.6)]'
+                    : 'text-slate-400 hover:text-royal-sky hover:bg-white/5'
+                }`}
+                title={isListening ? "Stop Voice Listening" : "Start Voice Input (Web Speech)"}
               >
-                <Volume2 className="w-4 h-4" />
+                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
               </button>
 
               <button
@@ -569,7 +659,7 @@ export const ChatPage: React.FC = () => {
               <CornerDownLeft className="w-2.5 h-2.5" />
               <span>Send (Enter)</span>
             </span>
-            <span>Shift + Enter for newline</span>
+            <span>Mic for Speech • Shift+Enter newline</span>
           </div>
         </form>
       </div>

@@ -7,6 +7,7 @@ Optional: OpenAI, if LLM_PROVIDER=openai and OPENAI_API_KEY is set.
 Fallback: Context-Passage Direct Synthesis if local LLM is offline.
 """
 
+from typing import Iterator
 from app.core.config import Settings
 from app.core.logging import logger
 
@@ -14,6 +15,12 @@ from app.core.logging import logger
 class LLMProvider:
     def generate(self, system_prompt: str, user_prompt: str) -> str:
         raise NotImplementedError
+
+    def generate_stream(self, system_prompt: str, user_prompt: str) -> Iterator[str]:
+        full_text = self.generate(system_prompt, user_prompt)
+        words = full_text.split(" ")
+        for i, word in enumerate(words):
+            yield word + (" " if i < len(words) - 1 else "")
 
 
 class OllamaLLM(LLMProvider):
@@ -98,7 +105,6 @@ class OpenAILLM(LLMProvider):
 
 
 def get_llm_provider() -> LLMProvider:
-    # Read fresh environment settings directly so changing .env updates dynamically
     live_settings = Settings()
     if live_settings.LLM_PROVIDER == "openai":
         return OpenAILLM(api_key=live_settings.OPENAI_API_KEY, model=live_settings.OPENAI_MODEL)

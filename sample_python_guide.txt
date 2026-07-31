@@ -1,0 +1,55 @@
+# Python Programming & Core Concepts Guide
+
+## Chapter 1: Introduction to Python
+Python is a high-level, interpreted, general-purpose programming language. Created by Guido van Rossum and released in 1991, Python's design philosophy emphasizes code readability with its notable use of significant whitespace.
+
+### Key Features of Python:
+1. Easy to Read and Learn: Python has a simple syntax similar to the English language.
+2. Dynamically Typed: Variable types are declared automatically at runtime.
+3. Multi-paradigm: Supports procedural, object-oriented, and functional programming paradigms.
+4. Rich Standard Library: Provides modules for file I/O, networking, data structures, and web frameworks.
+
+---
+
+## Chapter 2: Control Flow & Loops
+Python uses clean indentation to define code blocks instead of curly braces.
+
+### 1. Conditional Statements
+Conditionals allow executing code blocks conditionally:
+```python
+x = 10
+if x > 5:
+    print("x is greater than 5")
+elif x == 5:
+    print("x equals 5")
+else:
+    print("x is less than 5")
+```
+
+### 2. For and While Loops
+Loops iterate over sequences or repeat tasks until conditions fail:
+```python
+# For Loop Example
+for item in ["Python", "FastAPI", "React"]:
+    print(f"Learning {item}")
+
+# While Loop Example
+count = 0
+while count < 3:
+    print(f"Count is {count}")
+    count += 1
+```
+
+---
+
+## Chapter 3: Functions and Modules
+Functions encapsulate reusable logic in Python programs.
+
+```python
+def calculate_area(radius: float) -> float:
+    """Calculate the area of a circle given its radius."""
+    import math
+    return math.pi * (radius ** 2)
+
+print("Area:", calculate_area(5.0))
+```

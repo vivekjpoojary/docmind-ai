@@ -2,12 +2,12 @@
 LLM provider abstraction for answer generation.
 
 Default: Ollama (local, free, runs on the user's machine — requires
-`ollama pull llama3.1` and the Ollama service running).
+`ollama pull llama3.1` or `llama3.2:1b` and the Ollama service running).
 Optional: OpenAI, if LLM_PROVIDER=openai and OPENAI_API_KEY is set.
 Fallback: Context-Passage Direct Synthesis if local LLM is offline.
 """
 
-from app.core.config import settings
+from app.core.config import Settings
 from app.core.logging import logger
 
 
@@ -41,7 +41,6 @@ class OllamaLLM(LLMProvider):
             return response.json()["message"]["content"].strip()
         except (httpx.ConnectError, httpx.HTTPError) as exc:
             logger.warning(f"Ollama is unreachable or model not pulled: {exc}. Using grounded context fallback.")
-            # Extract retrieved context lines from user_prompt
             context_part = user_prompt
             if "CONTEXT:" in user_prompt:
                 context_part = user_prompt.split("CONTEXT:")[-1].split("QUESTION:")[0].strip()
@@ -50,39 +49,59 @@ class OllamaLLM(LLMProvider):
                 f"*(Answer generated directly from retrieved document passages)*:\n\n"
                 f"{context_part}\n\n"
                 f"--- \n"
-                f"💡 *Tip: For full AI model rephrasing, start Ollama locally (`ollama serve` & `ollama pull llama3.1`) or set `LLM_PROVIDER=openai` in backend/.env.*"
+                f"💡 *Tip: For full AI model rephrasing, start Ollama locally (`ollama serve` & `ollama pull llama3.2:1b`) or add your OpenAI key in backend/.env.*"
             )
 
 
 class OpenAILLM(LLMProvider):
     def __init__(self, api_key: str, model: str):
-        from openai import OpenAI
-
-        self._client = OpenAI(api_key=api_key)
+        self.api_key = api_key
         self.model = model
 
     def generate(self, system_prompt: str, user_prompt: str) -> str:
-        response = self._client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            temperature=0.1,
-        )
-        return response.choices[0].message.content.strip()
+        if not self.api_key or self.api_key.strip() == "" or "your-openai-api-key" in self.api_key:
+            context_part = user_prompt
+            if "CONTEXT:" in user_prompt:
+                context_part = user_prompt.split("CONTEXT:")[-1].split("QUESTION:")[0].strip()
+
+            return (
+                f"*(Answer generated directly from retrieved document passages)*:\n\n"
+                f"{context_part}\n\n"
+                f"--- \n"
+                f"⚠️ *OpenAI API Key Missing: Please add your key to `OPENAI_API_KEY` in `backend/.env`.*"
+            )
+
+        try:
+            from openai import OpenAI
+            client = OpenAI(api_key=self.api_key)
+            response = client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                temperature=0.1,
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as exc:
+            logger.warning(f"OpenAI generation error: {exc}")
+            context_part = user_prompt
+            if "CONTEXT:" in user_prompt:
+                context_part = user_prompt.split("CONTEXT:")[-1].split("QUESTION:")[0].strip()
+
+            return (
+                f"*(Answer generated directly from retrieved document passages)*:\n\n"
+                f"{context_part}\n\n"
+                f"--- \n"
+                f"⚠️ *OpenAI API Error: {str(exc)}. Please check `OPENAI_API_KEY` in `backend/.env`.*"
+            )
 
 
 def get_llm_provider() -> LLMProvider:
-    """
-    Not cached (unlike embeddings) — cheap to construct, and this keeps
-    provider selection responsive to .env changes without a restart-only
-    lru_cache footgun during development.
-    """
-    if settings.LLM_PROVIDER == "openai":
-        if not settings.OPENAI_API_KEY:
-            raise ValueError("LLM_PROVIDER=openai but OPENAI_API_KEY is not set in .env")
-        return OpenAILLM(api_key=settings.OPENAI_API_KEY, model=settings.OPENAI_MODEL)
+    # Read fresh environment settings directly so changing .env updates dynamically
+    live_settings = Settings()
+    if live_settings.LLM_PROVIDER == "openai":
+        return OpenAILLM(api_key=live_settings.OPENAI_API_KEY, model=live_settings.OPENAI_MODEL)
 
-    logger.debug(f"Using Ollama LLM: {settings.OLLAMA_MODEL} @ {settings.OLLAMA_BASE_URL}")
-    return OllamaLLM(base_url=settings.OLLAMA_BASE_URL, model=settings.OLLAMA_MODEL)
+    logger.debug(f"Using Ollama LLM: {live_settings.OLLAMA_MODEL} @ {live_settings.OLLAMA_BASE_URL}")
+    return OllamaLLM(base_url=live_settings.OLLAMA_BASE_URL, model=live_settings.OLLAMA_MODEL)

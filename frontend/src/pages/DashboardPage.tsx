@@ -101,7 +101,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
             </div>
           </div>
           <p className="mt-4 text-3xl font-extrabold text-slate-900 dark:text-slate-100">
-            {loading ? '...' : analytics?.document_count ?? 0}
+            {loading ? '...' : analytics?.total_documents ?? 0}
           </p>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Indexed & Ready for Query</p>
         </div>
@@ -116,7 +116,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
             </div>
           </div>
           <p className="mt-4 text-3xl font-extrabold text-slate-900 dark:text-slate-100">
-            {loading ? '...' : analytics?.chunk_count ?? 0}
+            {loading ? '...' : analytics?.total_chunks ?? 0}
           </p>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">FAISS Index Passages</p>
         </div>
@@ -131,7 +131,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
             </div>
           </div>
           <p className="mt-4 text-3xl font-extrabold text-slate-900 dark:text-slate-100">
-            {loading ? '...' : analytics?.conversation_count ?? 0}
+            {loading ? '...' : analytics?.total_conversations ?? 0}
           </p>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Recorded QA Sessions</p>
         </div>
@@ -146,7 +146,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
             </div>
           </div>
           <p className="mt-4 text-3xl font-extrabold text-slate-900 dark:text-slate-100">
-            {loading ? '...' : formatBytes(analytics?.total_storage_bytes ?? 0)}
+            {loading ? '...' : formatBytes(analytics?.storage_bytes ?? 0)}
           </p>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Raw Files + Index Vector Storage</p>
         </div>

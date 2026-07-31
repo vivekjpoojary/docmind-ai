@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { HardDrive, FileText, MessageSquare, Sparkles } from 'lucide-react';
+import { HardDrive, FileText, MessageSquare, Sparkles, Layers, HelpCircle } from 'lucide-react';
 import { analyticsApi } from '../services/api';
 import { UserAnalytics } from '../types';
 
@@ -23,7 +23,7 @@ export const AnalyticsPage: React.FC = () => {
   }, []);
 
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 B';
+    if (!bytes || bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -40,15 +40,23 @@ export const AnalyticsPage: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="p-8 text-center text-slate-500 text-sm">Loading analytics...</div>
+        <div className="p-8 text-center text-slate-500 text-sm">Loading analytics metrics...</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <div className="p-3 bg-sky-100 dark:bg-sky-950/60 rounded-xl text-sky-600 w-fit mb-4">
               <FileText className="w-6 h-6" />
             </div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Documents Uploaded</p>
-            <p className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{stats?.document_count ?? 0}</p>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Indexed Documents</p>
+            <p className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{stats?.total_documents ?? 0}</p>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="p-3 bg-amber-100 dark:bg-amber-950/60 rounded-xl text-amber-600 w-fit mb-4">
+              <Layers className="w-6 h-6" />
+            </div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Document Pages</p>
+            <p className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{stats?.total_pages ?? 0}</p>
           </div>
 
           <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -56,7 +64,7 @@ export const AnalyticsPage: React.FC = () => {
               <Sparkles className="w-6 h-6" />
             </div>
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Vector Chunks (FAISS)</p>
-            <p className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{stats?.chunk_count ?? 0}</p>
+            <p className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{stats?.total_chunks ?? 0}</p>
           </div>
 
           <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -64,7 +72,15 @@ export const AnalyticsPage: React.FC = () => {
               <MessageSquare className="w-6 h-6" />
             </div>
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Conversations Created</p>
-            <p className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{stats?.conversation_count ?? 0}</p>
+            <p className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{stats?.total_conversations ?? 0}</p>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="p-3 bg-rose-100 dark:bg-rose-950/60 rounded-xl text-rose-600 w-fit mb-4">
+              <HelpCircle className="w-6 h-6" />
+            </div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Questions Asked</p>
+            <p className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{stats?.total_questions_asked ?? 0}</p>
           </div>
 
           <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -72,7 +88,7 @@ export const AnalyticsPage: React.FC = () => {
               <HardDrive className="w-6 h-6" />
             </div>
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Storage Consumed</p>
-            <p className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{formatBytes(stats?.total_storage_bytes ?? 0)}</p>
+            <p className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{formatBytes(stats?.storage_bytes ?? 0)}</p>
           </div>
         </div>
       )}

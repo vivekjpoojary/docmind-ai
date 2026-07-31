@@ -69,10 +69,12 @@ export interface SearchResponse {
 }
 
 export interface UserAnalytics {
-  document_count: number;
-  chunk_count: number;
-  conversation_count: number;
-  total_storage_bytes: number;
+  total_documents: number;
+  total_pages: number;
+  total_chunks: number;
+  storage_bytes: number;
+  total_conversations: number;
+  total_questions_asked: number;
 }
 
 export interface SystemAnalytics {

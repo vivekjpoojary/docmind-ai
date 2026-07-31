@@ -65,14 +65,14 @@ async def init_db() -> None:
     async with AsyncSessionLocal() as session:
         from sqlalchemy import select
         from app.models.user import User
-        from app.core.security import get_password_hash
+        from app.core.security import hash_password
 
         result = await session.execute(select(User))
         users = result.scalars().all()
         if not users:
             admin_user = User(
                 email="admin@gmail.com",
-                hashed_password=get_password_hash("adminpassword"),
+                hashed_password=hash_password("adminpassword"),
                 full_name="System Admin",
                 is_admin=True,
                 is_active=True,

@@ -71,9 +71,9 @@ async def init_db() -> None:
         users = result.scalars().all()
         if not users:
             admin_user = User(
-                email="admin@gmail.com",
-                hashed_password=hash_password("adminpassword"),
-                full_name="System Admin",
+                email="admin@docmind.ai",
+                hashed_password=hash_password("REDACTED_PASSWORD"),
+                full_name="Vivek Poojary (Admin)",
                 is_admin=True,
                 is_active=True,
             )

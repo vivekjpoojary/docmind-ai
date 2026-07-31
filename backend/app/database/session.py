@@ -57,9 +57,26 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def init_db() -> None:
-    """Create all tables. Called on application startup for dev/SQLite.
-
-    In production with migrations, Alembic should own schema changes instead.
-    """
+    """Create all tables and seed default admin account if empty."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    # Seed initial Admin user if no user exists
+    async with AsyncSessionLocal() as session:
+        from sqlalchemy import select
+        from app.models.user import User
+        from app.core.security import get_password_hash
+
+        result = await session.execute(select(User))
+        users = result.scalars().all()
+        if not users:
+            admin_user = User(
+                email="admin@gmail.com",
+                hashed_password=get_password_hash("adminpassword"),
+                full_name="System Admin",
+                is_admin=True,
+                is_active=True,
+            )
+            session.add(admin_user)
+            await session.commit()
+

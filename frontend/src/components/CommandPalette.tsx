@@ -41,23 +41,23 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose,
   const filtered = actions.filter((a) => a.label.toLowerCase().includes(query.toLowerCase()));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-150">
       <div
-        className="w-full max-w-xl bg-[#0D111A] border border-white/10 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.8)] overflow-hidden"
+        className="w-full max-w-xl bg-[#0E1422] border border-white/10 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Bar Input */}
         <div className="flex items-center px-4 py-3.5 border-b border-white/10 relative">
-          <Search className="w-5 h-5 text-cyber-cyan mr-3 shrink-0" />
+          <Search className="w-5 h-5 text-royal-sky mr-3 shrink-0" />
           <input
             type="text"
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a command or jump to workspace..."
-            className="w-full bg-transparent text-slate-100 placeholder-slate-500 text-sm focus:outline-none font-sans"
+            className="w-full bg-transparent text-slate-100 placeholder-slate-400 text-sm focus:outline-none font-sans"
           />
-          <button onClick={onClose} className="p-1 text-slate-500 hover:text-slate-300 rounded-lg">
+          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-200 rounded-lg">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -65,7 +65,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose,
         {/* Command Options List */}
         <div className="p-2 max-h-80 overflow-y-auto space-y-1">
           {filtered.length === 0 ? (
-            <div className="p-6 text-center text-xs text-slate-500">No matching workspace actions found</div>
+            <div className="p-6 text-center text-xs text-slate-400 font-mono">No matching workspace actions found</div>
           ) : (
             filtered.map((action, idx) => {
               const Icon = action.icon;
@@ -76,10 +76,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose,
                     setActiveTab(action.tab);
                     onClose();
                   }}
-                  className="w-full text-left px-3.5 py-2.5 rounded-xl flex items-center justify-between hover:bg-cyber-cyan/10 hover:border-cyber-cyan/30 border border-transparent transition-all group"
+                  className="w-full text-left px-3.5 py-2.5 rounded-xl flex items-center justify-between hover:bg-royal-sky/15 hover:border-royal-sky/30 border border-transparent transition-all group"
                 >
                   <div className="flex items-center space-x-3">
-                    <div className="p-2 rounded-lg bg-slate-900 border border-white/10 text-cyber-cyan group-hover:bg-cyber-cyan/20">
+                    <div className="p-2 rounded-lg bg-[#090D16] border border-white/10 text-royal-sky group-hover:bg-royal-sky/20">
                       <Icon className="w-4 h-4" />
                     </div>
                     <span className="text-xs font-semibold text-slate-200 group-hover:text-white">
@@ -87,7 +87,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose,
                     </span>
                   </div>
 
-                  <div className="flex items-center space-x-2 text-[10px] text-slate-500 group-hover:text-cyber-cyan font-mono">
+                  <div className="flex items-center space-x-2 text-[10px] text-slate-400 group-hover:text-royal-sky font-mono">
                     <span>Jump</span>
                     <ArrowRight className="w-3 h-3" />
                   </div>
@@ -98,7 +98,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose,
         </div>
 
         {/* Footer info */}
-        <div className="px-4 py-2 bg-slate-950/60 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-slate-500">
+        <div className="px-4 py-2 bg-[#090D16] border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-slate-400">
           <span>Press ESC to dismiss</span>
           <span>DocMind Command Palette</span>
         </div>

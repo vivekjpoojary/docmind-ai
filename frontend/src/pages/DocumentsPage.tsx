@@ -106,8 +106,8 @@ export const DocumentsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2">
-            <Layers className="w-5 h-5 text-cyber-cyan" />
-            <h1 className="text-2xl font-bold font-display text-slate-100">Document Repository Vault</h1>
+            <Layers className="w-5 h-5 text-royal-sky" />
+            <h1 className="text-2xl font-bold font-display text-white">Document Repository Vault</h1>
           </div>
           <p className="text-xs font-mono text-slate-400 mt-1">
             Files are sliced into 500-char passages and stored within FAISS L2 vector embedding space.
@@ -116,9 +116,9 @@ export const DocumentsPage: React.FC = () => {
 
         <button
           onClick={fetchDocuments}
-          className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-white/10 text-slate-300 text-xs font-mono hover:border-cyber-cyan/40 transition-all shadow-sm"
+          className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-[#0E1422] border border-white/10 text-slate-300 text-xs font-mono hover:border-royal-sky/40 transition-all shadow-sm"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-cyber-cyan' : ''}`} />
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-royal-sky' : ''}`} />
           <span>Refresh Index</span>
         </button>
       </div>
@@ -137,7 +137,7 @@ export const DocumentsPage: React.FC = () => {
       )}
 
       {success && (
-        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-royal-mint/10 border border-royal-mint/30 text-royal-mint text-xs font-mono flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>{success}</span>
@@ -158,18 +158,18 @@ export const DocumentsPage: React.FC = () => {
         onDrop={handleDrop}
         className={`relative border-2 border-dashed rounded-3xl p-8 text-center transition-all overflow-hidden ${
           dragOver
-            ? 'border-cyber-cyan bg-cyber-cyan/10 scale-[1.01]'
-            : 'border-white/15 bg-panel-interactive hover:border-white/30'
+            ? 'border-royal-sky bg-royal-sky/10 scale-[1.01]'
+            : 'border-white/15 bg-glass-panel-interactive hover:border-white/30'
         }`}
       >
         {uploading && <div className="laser-beam animate-laser-scan" />}
 
         <div className="max-w-md mx-auto space-y-4">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-cyber-cyan/10 border border-cyber-cyan/30 text-cyber-cyan flex items-center justify-center shadow-[0_0_25px_rgba(6,182,212,0.25)]">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-royal-sky/10 border border-royal-sky/30 text-royal-sky flex items-center justify-center shadow-[0_0_25px_rgba(56,189,248,0.3)]">
             <UploadCloud className={`w-7 h-7 ${uploading ? 'animate-bounce' : ''}`} />
           </div>
           <div>
-            <h3 className="text-base font-bold font-display text-slate-100">
+            <h3 className="text-base font-bold font-display text-white">
               {uploading ? 'Scanning & Vectorizing Document...' : 'Drag & Drop Document to Index'}
             </h3>
             <p className="text-xs font-mono text-slate-400 mt-1">
@@ -178,7 +178,7 @@ export const DocumentsPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="cursor-pointer inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-indigo text-white font-semibold text-xs shadow-[0_0_20px_rgba(6,182,212,0.35)] transition-all">
+            <label className="cursor-pointer inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-royal-violet to-royal-sky text-white font-semibold text-xs shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-all">
               <Upload className="w-4 h-4" />
               <span>Select File from Machine</span>
               <input
@@ -195,26 +195,26 @@ export const DocumentsPage: React.FC = () => {
 
       {/* Document Vault Table */}
       <div className="glass-panel rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-[#0A0D15]">
+        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-[#0B0F1B]">
           <h3 className="font-bold font-display text-slate-200 text-xs uppercase tracking-wider font-mono">
             Vault Index ({documents.length} Files)
           </h3>
         </div>
 
         {loading ? (
-          <div className="p-8 text-center text-slate-500 font-mono text-xs">
+          <div className="p-8 text-center text-slate-400 font-mono text-xs">
             Querying document repository database...
           </div>
         ) : documents.length === 0 ? (
           <div className="p-12 text-center text-slate-400 text-xs font-mono space-y-2">
-            <FileText className="w-10 h-10 mx-auto mb-3 opacity-30 text-cyber-cyan" />
+            <FileText className="w-10 h-10 mx-auto mb-3 opacity-30 text-royal-sky" />
             <p className="font-semibold text-slate-300">Vault is empty</p>
-            <p className="text-slate-500">Upload a PDF or DOCX above to begin parsing vector embeddings.</p>
+            <p className="text-slate-400">Upload a PDF or DOCX above to begin parsing vector embeddings.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-mono">
-              <thead className="bg-slate-950/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-white/5">
+              <thead className="bg-[#070A11] text-slate-400 uppercase text-[10px] tracking-wider border-b border-white/5">
                 <tr>
                   <th className="px-6 py-3.5">Filename</th>
                   <th className="px-6 py-3.5">Type</th>
@@ -230,13 +230,13 @@ export const DocumentsPage: React.FC = () => {
                   <tr key={doc.id} className="hover:bg-white/[0.03] transition-colors">
                     <td className="px-6 py-4 font-semibold text-slate-200">
                       <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-cyber-cyan/10 rounded-lg text-cyber-cyan border border-cyber-cyan/20">
+                        <div className="p-2 bg-royal-sky/10 rounded-lg text-royal-sky border border-royal-sky/20">
                           {doc.file_type === 'pdf' ? (
                             <FileText className="w-4 h-4 text-rose-400" />
                           ) : doc.file_type === 'docx' ? (
                             <FileSpreadsheet className="w-4 h-4 text-blue-400" />
                           ) : (
-                            <FileCode className="w-4 h-4 text-emerald-400" />
+                            <FileCode className="w-4 h-4 text-royal-mint" />
                           )}
                         </div>
                         <span className="truncate max-w-xs font-sans text-xs" title={doc.filename}>
@@ -252,21 +252,21 @@ export const DocumentsPage: React.FC = () => {
                     <td className="px-6 py-4 text-slate-400">
                       {formatBytes(doc.file_size_bytes)}
                     </td>
-                    <td className="px-6 py-4 text-cyber-cyan font-bold">
+                    <td className="px-6 py-4 text-royal-sky font-bold">
                       {doc.chunk_count} passages
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-royal-mint/10 text-royal-mint border border-royal-mint/30">
                         <CheckCircle2 className="w-3 h-3 mr-1" /> {doc.status || 'READY'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-500">
+                    <td className="px-6 py-4 text-slate-400">
                       {doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : 'Just now'}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => handleDelete(doc.id, doc.filename)}
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
                         title="Purge Document & FAISS Vectors"
                       >
                         <Trash2 className="w-4 h-4" />

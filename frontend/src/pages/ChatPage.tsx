@@ -115,7 +115,6 @@ export const ChatPage: React.FC = () => {
     const userQuestion = input.trim();
     setInput('');
 
-    // Optimistic UI update
     const tempUserMsg: Message = {
       id: `temp-${Date.now()}`,
       sender: 'USER',
@@ -149,7 +148,6 @@ export const ChatPage: React.FC = () => {
 
       setMessages((prev) => [...prev, assistantMsg]);
 
-      // If citation sources returned, trigger paragraph glow on document viewport
       if (response.sources && response.sources.length > 0) {
         const topSource = response.sources[0];
         setHighlightedPage(topSource.page_number || 1);
@@ -186,12 +184,9 @@ export const ChatPage: React.FC = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex overflow-hidden bg-void text-slate-100 select-none">
-      {/* ========================================================================= */}
-      {/* PANEL A: INTELLIGENCE RAIL (LEFT - 260px)                                 */}
-      {/* ========================================================================= */}
-      <div className="w-64 bg-[#080B12] border-r border-white/[0.08] flex flex-col justify-between shrink-0">
-        {/* Header & Quick Action */}
+    <div className="h-[calc(100vh-4rem)] flex overflow-hidden bg-[#090D16] text-white select-none">
+      {/* PANEL A: INTELLIGENCE RAIL (LEFT - 260px) */}
+      <div className="w-64 bg-[#0A0E1A] border-r border-white/[0.08] flex flex-col justify-between shrink-0">
         <div className="p-4 space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono font-bold tracking-widest text-slate-400 uppercase">
@@ -202,7 +197,7 @@ export const ChatPage: React.FC = () => {
                 setActiveConvId(null);
                 setMessages([]);
               }}
-              className="p-1.5 rounded-lg bg-cyber-indigo/20 text-cyber-indigo border border-cyber-indigo/30 hover:bg-cyber-indigo/30 transition-all text-xs font-medium flex items-center space-x-1 shadow-[0_0_10px_rgba(99,102,241,0.2)]"
+              className="p-1.5 rounded-lg bg-royal-violet/20 text-royal-violet border border-royal-violet/40 hover:bg-royal-violet/30 transition-all text-xs font-semibold flex items-center space-x-1 shadow-[0_0_12px_rgba(79,70,229,0.3)]"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>New QA</span>
@@ -210,7 +205,7 @@ export const ChatPage: React.FC = () => {
           </div>
 
           {/* Floating Drop Zone */}
-          <label className="relative block border-2 border-dashed border-white/15 hover:border-cyber-cyan/50 bg-panel rounded-2xl p-4 text-center cursor-pointer transition-all group overflow-hidden">
+          <label className="relative block border-2 border-dashed border-white/15 hover:border-royal-sky/50 bg-obsidian-panel rounded-2xl p-4 text-center cursor-pointer transition-all group overflow-hidden">
             <input
               type="file"
               accept=".pdf,.docx,.txt"
@@ -218,7 +213,7 @@ export const ChatPage: React.FC = () => {
               className="hidden"
             />
             {isUploading && <div className="laser-beam animate-laser-scan" />}
-            <UploadCloud className="w-6 h-6 mx-auto text-cyber-cyan mb-1 group-hover:scale-110 transition-transform" />
+            <UploadCloud className="w-6 h-6 mx-auto text-royal-sky mb-1 group-hover:scale-110 transition-transform" />
             <p className="text-xs font-semibold text-slate-200">
               {isUploading ? 'Indexing File...' : 'Drop Document'}
             </p>
@@ -242,8 +237,8 @@ export const ChatPage: React.FC = () => {
                 onClick={() => setActiveDoc(doc)}
                 className={`p-2.5 rounded-xl border text-xs cursor-pointer transition-all flex items-center justify-between ${
                   isActive
-                    ? 'bg-cyber-cyan/15 border-cyber-cyan/50 text-white shadow-[0_0_15px_rgba(6,182,212,0.15)]'
-                    : 'bg-panel-interactive border-white/5 text-slate-300 hover:border-white/20'
+                    ? 'bg-royal-sky/15 border-royal-sky/50 text-white shadow-[0_0_15px_rgba(56,189,248,0.2)]'
+                    : 'bg-obsidian-panel border-white/5 text-slate-300 hover:border-white/20'
                 }`}
               >
                 <div className="flex items-center space-x-2.5 truncate">
@@ -252,7 +247,7 @@ export const ChatPage: React.FC = () => {
                   ) : doc.file_type === 'docx' ? (
                     <FileSpreadsheet className="w-4 h-4 text-blue-400 shrink-0" />
                   ) : (
-                    <FileCode className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <FileCode className="w-4 h-4 text-royal-mint shrink-0" />
                   )}
 
                   <div className="truncate">
@@ -274,7 +269,7 @@ export const ChatPage: React.FC = () => {
                       setSelectedDocIds([...selectedDocIds, doc.id]);
                     }
                   }}
-                  className="w-3.5 h-3.5 accent-cyber-cyan rounded cursor-pointer"
+                  className="w-3.5 h-3.5 accent-royal-sky rounded cursor-pointer"
                   title="Filter query scope to this document"
                 />
               </div>
@@ -292,7 +287,7 @@ export const ChatPage: React.FC = () => {
                   onClick={() => setActiveConvId(c.id)}
                   className={`p-2 rounded-lg text-[11px] font-mono cursor-pointer truncate transition-all ${
                     activeConvId === c.id
-                      ? 'bg-cyber-indigo/20 text-cyber-indigo font-bold border border-cyber-indigo/30'
+                      ? 'bg-royal-violet/20 text-royal-violet font-bold border border-royal-violet/40'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                   }`}
                 >
@@ -304,59 +299,56 @@ export const ChatPage: React.FC = () => {
         </div>
 
         {/* Vector Embedding Meter */}
-        <div className="p-4 bg-slate-950/80 border-t border-white/[0.08] space-y-2 font-mono text-[10px]">
+        <div className="p-4 bg-[#070A11] border-t border-white/[0.08] space-y-2 font-mono text-[10px]">
           <div className="flex justify-between text-slate-400">
             <span>FAISS Embedding Space</span>
-            <span className="text-cyber-cyan font-bold">128 / 512 Dim</span>
+            <span className="text-royal-sky font-bold">128 / 512 Dim</span>
           </div>
           <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-gradient-to-r from-cyber-cyan to-cyber-indigo h-full w-[42%] rounded-full animate-pulse" />
+            <div className="bg-gradient-to-r from-royal-sky to-royal-violet h-full w-[45%] rounded-full animate-pulse" />
           </div>
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* PANEL B: HIGH-PRECISION DOCUMENT VIEWPORT (CENTER FLEX)                   */}
-      {/* ========================================================================= */}
-      <div className="flex-1 flex flex-col bg-floor border-r border-white/[0.08] relative overflow-hidden">
+      {/* PANEL B: HIGH-PRECISION DOCUMENT VIEWPORT (CENTER FLEX) */}
+      <div className="flex-1 flex flex-col bg-obsidian-floor border-r border-white/[0.08] relative overflow-hidden">
         {/* Toolbar */}
-        <div className="h-12 px-4 border-b border-white/[0.08] bg-[#0A0D15] flex items-center justify-between shrink-0">
+        <div className="h-12 px-4 border-b border-white/[0.08] bg-[#0B0F1B] flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-3 text-xs font-mono">
-            <Layers className="w-4 h-4 text-cyber-cyan" />
+            <Layers className="w-4 h-4 text-royal-sky" />
             <span className="font-semibold text-slate-200 truncate max-w-xs">
               {activeDoc ? activeDoc.filename : 'No Document Selected'}
             </span>
             {activeDoc && (
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px]">
+              <span className="px-2 py-0.5 rounded-full bg-royal-mint/10 text-royal-mint border border-royal-mint/30 text-[10px] font-bold">
                 READY • OCR SYNCHRONIZED
               </span>
             )}
           </div>
 
-          {/* Viewport Zoom & In-Doc Search */}
           <div className="flex items-center space-x-3 text-xs">
             <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 value={docSearchQuery}
                 onChange={(e) => setDocSearchQuery(e.target.value)}
                 placeholder="Find in doc (⌘F)..."
-                className="pl-8 pr-3 py-1 rounded-xl bg-slate-900 border border-white/10 text-slate-200 text-xs font-mono focus:border-cyber-cyan focus:outline-none w-36"
+                className="pl-8 pr-3 py-1 rounded-xl bg-[#090D16] border border-white/10 text-slate-200 text-xs font-mono focus:border-royal-sky focus:outline-none w-36"
               />
             </div>
 
-            <div className="flex items-center space-x-1.5 bg-slate-900 p-1 rounded-xl border border-white/10 font-mono text-[11px]">
+            <div className="flex items-center space-x-1.5 bg-[#090D16] p-1 rounded-xl border border-white/10 font-mono text-[11px]">
               <button
                 onClick={() => setZoomLevel(Math.max(50, zoomLevel - 15))}
-                className="p-1 hover:text-cyber-cyan"
+                className="p-1 hover:text-royal-sky"
               >
                 <ZoomOut className="w-3.5 h-3.5" />
               </button>
               <span className="w-10 text-center font-bold text-slate-300">{zoomLevel}%</span>
               <button
                 onClick={() => setZoomLevel(Math.min(200, zoomLevel + 15))}
-                className="p-1 hover:text-cyber-cyan"
+                className="p-1 hover:text-royal-sky"
               >
                 <ZoomIn className="w-3.5 h-3.5" />
               </button>
@@ -365,21 +357,19 @@ export const ChatPage: React.FC = () => {
         </div>
 
         {/* Viewport Render Canvas */}
-        <div className="flex-1 overflow-y-auto p-8 flex justify-center bg-floor relative">
+        <div className="flex-1 overflow-y-auto p-8 flex justify-center bg-[#070A11] relative">
           {activeDoc ? (
             <div
               style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}
-              className="w-full max-w-2xl bg-[#0F1420] border border-white/10 rounded-2xl p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] space-y-6 transition-transform duration-200"
+              className="w-full max-w-2xl bg-[#0E1422] border border-white/10 rounded-2xl p-8 shadow-[0_20px_60px_rgba(0,0,0,0.85)] space-y-6 transition-transform duration-200"
             >
-              {/* Document Header Metadata */}
               <div className="pb-4 border-b border-white/10 flex items-center justify-between text-xs font-mono text-slate-400">
                 <span>FILE: {activeDoc.filename}</span>
                 <span>TYPE: {activeDoc.file_type.toUpperCase()} • {formatBytes(activeDoc.file_size_bytes)}</span>
               </div>
 
-              {/* Document Page Content Simulator */}
               <div className="space-y-4 text-xs font-sans leading-relaxed text-slate-300">
-                <div className="p-4 rounded-xl bg-slate-900/60 border border-white/5 space-y-2">
+                <div className="p-4 rounded-xl bg-[#0A0E18] border border-white/5 space-y-2">
                   <h4 className="text-sm font-bold text-slate-100 font-display">
                     1. Executive Technical Summary
                   </h4>
@@ -390,18 +380,18 @@ export const ChatPage: React.FC = () => {
 
                 {/* Glowing Paragraph Citation Overlay when cited by AI */}
                 {highlightedQuote && (
-                  <div className="p-4 rounded-xl bg-cyber-cyan/15 border-2 border-cyber-cyan text-white shadow-[0_0_30px_rgba(6,182,212,0.3)] animate-in fade-in duration-300">
-                    <div className="flex items-center space-x-2 text-[10px] font-mono text-cyber-cyan font-bold mb-1">
+                  <div className="p-4 rounded-xl bg-royal-sky/15 border-2 border-royal-sky text-white shadow-[0_0_30px_rgba(56,189,248,0.35)] animate-in fade-in duration-300">
+                    <div className="flex items-center space-x-2 text-[10px] font-mono text-royal-sky font-bold mb-1">
                       <Sparkles className="w-3.5 h-3.5" />
                       <span>CITED PASSAGE MATCH (PAGE {highlightedPage || 1})</span>
                     </div>
-                    <p className="italic font-medium leading-relaxed bg-black/40 p-2.5 rounded-lg border border-cyber-cyan/30">
+                    <p className="italic font-medium leading-relaxed bg-black/40 p-2.5 rounded-lg border border-royal-sky/30">
                       "{highlightedQuote}"
                     </p>
                   </div>
                 )}
 
-                <div className="p-4 rounded-xl bg-slate-900/60 border border-white/5 space-y-2">
+                <div className="p-4 rounded-xl bg-[#0A0E18] border border-white/5 space-y-2">
                   <h4 className="text-sm font-bold text-slate-100 font-display">
                     2. Vector Storage & Precision Grounding
                   </h4>
@@ -410,7 +400,7 @@ export const ChatPage: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-900/60 border border-white/5 space-y-2">
+                <div className="p-4 rounded-xl bg-[#0A0E18] border border-white/5 space-y-2">
                   <h4 className="text-sm font-bold text-slate-100 font-display">
                     3. Local LLM Reasoning Engine
                   </h4>
@@ -423,31 +413,28 @@ export const ChatPage: React.FC = () => {
           ) : (
             <div className="m-auto text-center space-y-3">
               <BookOpen className="w-12 h-12 text-slate-600 mx-auto opacity-40" />
-              <p className="text-sm font-medium text-slate-400">Select a document from the vault to inspect</p>
+              <p className="text-sm font-medium text-slate-400 font-sans">Select a document from the vault to inspect</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* PANEL C: INTERACTIVE REASONING WORKSPACE (RIGHT - 420px)                  */}
-      {/* ========================================================================= */}
-      <div className="w-[420px] bg-[#0A0D15] flex flex-col justify-between shrink-0 relative">
-        {/* Header with Model Selector & Latency */}
+      {/* PANEL C: INTERACTIVE REASONING WORKSPACE (RIGHT - 420px) */}
+      <div className="w-[420px] bg-[#0A0E1A] flex flex-col justify-between shrink-0 relative">
         <div className="p-3.5 border-b border-white/[0.08] flex items-center justify-between bg-[#080B12]">
           <div className="flex items-center space-x-2">
-            <Cpu className="w-4 h-4 text-cyber-cyan" />
+            <Cpu className="w-4 h-4 text-royal-sky" />
             <select
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
-              className="bg-slate-900 border border-white/10 text-xs font-mono font-bold text-slate-200 rounded-xl px-2.5 py-1 focus:border-cyber-cyan focus:outline-none"
+              className="bg-[#090D16] border border-white/10 text-xs font-mono font-bold text-slate-200 rounded-xl px-2.5 py-1 focus:border-royal-sky focus:outline-none"
             >
               <option value="llama3.2">Meta Llama 3.2 1B (Local)</option>
               <option value="gpt4o">OpenAI GPT-4o Vision</option>
             </select>
           </div>
 
-          <div className="flex items-center space-x-1.5 px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono">
+          <div className="flex items-center space-x-1.5 px-2 py-1 rounded-full bg-royal-mint/10 text-royal-mint border border-royal-mint/30 text-[10px] font-mono font-bold">
             <Activity className="w-3 h-3 animate-pulse" />
             <span>&lt;45ms LATENCY</span>
           </div>
@@ -457,14 +444,14 @@ export const ChatPage: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4 my-auto">
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-cyber-indigo/20 to-cyber-cyan/20 border border-cyber-cyan/30 text-cyber-cyan shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-royal-violet/30 to-royal-sky/20 border border-royal-sky/40 text-royal-sky shadow-[0_0_30px_rgba(56,189,248,0.25)]">
                 <Sparkles className="w-8 h-8 animate-pulse" />
               </div>
               <div>
                 <h3 className="text-base font-bold font-display text-slate-100">
                   Ask DocMind AI
                 </h3>
-                <p className="text-xs text-slate-400 mt-1 max-w-xs leading-relaxed">
+                <p className="text-xs text-slate-400 mt-1 max-w-xs leading-relaxed font-sans">
                   Query your document vault with dense vector search & grounded citation reasoning.
                 </p>
               </div>
@@ -480,13 +467,13 @@ export const ChatPage: React.FC = () => {
                   <div
                     className={`max-w-[90%] p-3.5 rounded-2xl text-xs leading-relaxed transition-all ${
                       isUser
-                        ? 'bg-gradient-to-r from-cyber-indigo/80 to-indigo-700 text-white rounded-br-none shadow-[0_5px_20px_rgba(99,102,241,0.25)]'
+                        ? 'bg-gradient-to-r from-royal-violet to-indigo-700 text-white rounded-br-none shadow-[0_5px_20px_rgba(79,70,229,0.3)]'
                         : 'glass-panel text-slate-200 rounded-bl-none border-white/10'
                     }`}
                   >
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                    <p className="whitespace-pre-wrap font-sans">{msg.content}</p>
 
-                    {/* Inline Citation Chips with Glass Preview Hover */}
+                    {/* Inline Citation Chips with Hover Tooltip */}
                     {!isUser && msg.sources && msg.sources.length > 0 && (
                       <div className="mt-3 pt-2.5 border-t border-white/10 space-y-1.5">
                         <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider font-bold">
@@ -502,7 +489,7 @@ export const ChatPage: React.FC = () => {
                                 setHighlightedPage(src.page_number || 1);
                                 setHighlightedQuote(src.content);
                               }}
-                              className="px-2 py-1 rounded-lg bg-cyber-cyan/15 hover:bg-cyber-cyan/30 text-cyber-cyan border border-cyber-cyan/40 text-[10px] font-mono font-bold transition-all flex items-center space-x-1"
+                              className="px-2.5 py-1 rounded-lg bg-royal-sky/15 hover:bg-royal-sky/30 text-royal-sky border border-royal-sky/40 text-[10px] font-mono font-bold transition-all flex items-center space-x-1"
                             >
                               <FileText className="w-3 h-3" />
                               <span>Doc {idx + 1} • P.{src.page_number || 1}</span>
@@ -517,7 +504,7 @@ export const ChatPage: React.FC = () => {
             })
           )}
           {loading && (
-            <div className="flex items-center space-x-2 text-xs font-mono text-cyber-cyan p-3 bg-cyber-cyan/10 rounded-2xl border border-cyber-cyan/30 w-fit animate-pulse">
+            <div className="flex items-center space-x-2 text-xs font-mono text-royal-sky p-3 bg-royal-sky/10 rounded-2xl border border-royal-sky/30 w-fit animate-pulse font-bold">
               <Sparkles className="w-4 h-4 animate-spin" />
               <span>Generating grounded response...</span>
             </div>
@@ -529,13 +516,13 @@ export const ChatPage: React.FC = () => {
         {hoveredCitation && citationPos && (
           <div
             style={{ left: citationPos.x, top: citationPos.y - 120 }}
-            className="fixed z-50 w-72 glass-panel p-3 rounded-2xl border-cyber-cyan/50 shadow-[0_15px_40px_rgba(0,0,0,0.9)] text-xs space-y-1.5 pointer-events-none animate-in fade-in duration-150"
+            className="fixed z-50 w-72 glass-panel p-3 rounded-2xl border-royal-mint/50 shadow-[0_15px_40px_rgba(0,0,0,0.95)] text-xs space-y-1.5 pointer-events-none animate-in fade-in duration-150"
           >
-            <div className="flex items-center justify-between text-[10px] font-mono text-cyber-cyan font-bold">
+            <div className="flex items-center justify-between text-[10px] font-mono text-royal-mint font-bold">
               <span>SOURCE PASSAGE (PAGE {hoveredCitation.page_number || 1})</span>
               <span>{(hoveredCitation.similarity * 100).toFixed(0)}% MATCH</span>
             </div>
-            <p className="text-[11px] text-slate-300 italic line-clamp-3 bg-black/40 p-2 rounded-xl border border-white/5">
+            <p className="text-[11px] text-slate-300 italic line-clamp-3 bg-black/40 p-2 rounded-xl border border-white/5 font-sans">
               "{hoveredCitation.content}"
             </p>
           </div>
@@ -543,7 +530,7 @@ export const ChatPage: React.FC = () => {
 
         {/* Input Terminal */}
         <form onSubmit={handleSendMessage} className="p-3 bg-[#080B12] border-t border-white/[0.08]">
-          <div className="relative flex items-center bg-slate-900 border border-white/10 rounded-2xl p-2 focus-within:border-cyber-cyan transition-all shadow-inner">
+          <div className="relative flex items-center bg-[#090D16] border border-white/10 rounded-2xl p-2 focus-within:border-royal-sky transition-all shadow-inner">
             <textarea
               rows={1}
               value={input}
@@ -555,13 +542,13 @@ export const ChatPage: React.FC = () => {
                 }
               }}
               placeholder="Ask anything about your documents..."
-              className="w-full bg-transparent text-slate-100 placeholder-slate-500 text-xs focus:outline-none resize-none px-2 py-1 font-sans"
+              className="w-full bg-transparent text-slate-100 placeholder-slate-400 text-xs focus:outline-none resize-none px-2 py-1 font-sans"
             />
 
             <div className="flex items-center space-x-1.5 shrink-0 ml-2">
               <button
                 type="button"
-                className="p-1.5 rounded-xl text-slate-400 hover:text-cyber-cyan hover:bg-white/5 transition-colors"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-royal-sky hover:bg-white/5 transition-colors"
                 title="Voice Input Visualizer"
               >
                 <Volume2 className="w-4 h-4" />
@@ -570,19 +557,19 @@ export const ChatPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={!input.trim() || loading}
-                className="p-2 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-indigo text-white shadow-[0_0_15px_rgba(6,182,212,0.3)] disabled:opacity-40 transition-all"
+                className="p-2 rounded-xl bg-gradient-to-r from-royal-violet to-royal-sky text-white shadow-[0_0_15px_rgba(79,70,229,0.4)] disabled:opacity-40 transition-all"
               >
                 <Send className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 px-2 mt-1.5">
+          <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 px-2 mt-1.5">
             <span className="flex items-center space-x-1">
               <CornerDownLeft className="w-2.5 h-2.5" />
               <span>Send (Enter)</span>
             </span>
-            <span>Shift + Enter for new line</span>
+            <span>Shift + Enter for newline</span>
           </div>
         </form>
       </div>

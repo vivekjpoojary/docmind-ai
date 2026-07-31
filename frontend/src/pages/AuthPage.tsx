@@ -42,46 +42,46 @@ export const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-void">
-      <div className="w-full max-w-4xl grid md:grid-cols-2 rounded-3xl overflow-hidden glass-panel border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.9)]">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-[#090D16]">
+      <div className="w-full max-w-4xl grid md:grid-cols-2 rounded-3xl overflow-hidden glass-panel border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.95)]">
         
         {/* Left Side: Hero Branding */}
-        <div className="hidden md:flex flex-col justify-between p-8 bg-gradient-to-br from-floor via-[#0F1422] to-slate-900 text-white relative overflow-hidden border-r border-white/10">
-          <div className="absolute -top-12 -left-12 w-48 h-48 bg-cyber-cyan/15 rounded-full blur-3xl" />
-          <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-cyber-indigo/15 rounded-full blur-3xl" />
+        <div className="hidden md:flex flex-col justify-between p-8 bg-gradient-to-br from-[#0E1422] via-[#12192B] to-[#0A0D16] text-white relative overflow-hidden border-r border-white/10">
+          <div className="absolute -top-12 -left-12 w-48 h-48 bg-royal-sky/15 rounded-full blur-3xl" />
+          <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-royal-violet/15 rounded-full blur-3xl" />
 
           <div className="relative z-10 space-y-6">
             <div className="flex items-center space-x-3">
-              <div className="p-2.5 bg-gradient-to-br from-cyber-indigo to-cyber-cyan rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.35)]">
+              <div className="p-2.5 bg-gradient-to-br from-royal-violet to-royal-sky rounded-xl shadow-[0_0_20px_rgba(79,70,229,0.4)]">
                 <Brain className="w-7 h-7 text-white" />
               </div>
-              <span className="text-2xl font-bold font-display text-gradient-cyan tracking-tight">DocMind AI</span>
+              <span className="text-2xl font-bold font-display text-gradient-royal tracking-tight">DocMind AI</span>
             </div>
             
-            <h2 className="text-2xl font-extrabold font-display text-slate-100 leading-tight">
+            <h2 className="text-2xl font-extrabold font-display text-white leading-tight">
               Flagship Document Intelligence Workstation
             </h2>
-            <p className="text-xs text-slate-400 leading-relaxed font-sans">
+            <p className="text-xs text-slate-300 leading-relaxed font-sans">
               Enterprise Retrieval-Augmented Generation (RAG) platform with strict zero-hallucination page citations, FAISS dense vector search, and local model execution.
             </p>
           </div>
 
           <div className="relative z-10 space-y-2.5 font-mono text-xs">
             <div className="flex items-center space-x-3 text-slate-300 bg-white/5 p-3 rounded-xl border border-white/10">
-              <ShieldCheck className="w-4 h-4 text-cyber-cyan shrink-0" />
+              <ShieldCheck className="w-4 h-4 text-royal-sky shrink-0" />
               <span>Page-accurate citation mapping & quote overlays</span>
             </div>
             <div className="flex items-center space-x-3 text-slate-300 bg-white/5 p-3 rounded-xl border border-white/10">
-              <Sparkles className="w-4 h-4 text-cyber-indigo shrink-0" />
+              <Sparkles className="w-4 h-4 text-royal-violet shrink-0" />
               <span>FAISS high-performance vector embedding space</span>
             </div>
           </div>
         </div>
 
         {/* Right Side: Auth Form */}
-        <div className="p-8 flex flex-col justify-center bg-[#0D111A]">
+        <div className="p-8 flex flex-col justify-center bg-[#0E1422]">
           <div className="mb-6">
-            <h3 className="text-2xl font-bold font-display text-slate-100">
+            <h3 className="text-2xl font-bold font-display text-white">
               {isLogin ? 'Workstation Login' : 'Register Account'}
             </h3>
             <p className="text-xs font-mono text-slate-400 mt-1">
@@ -99,46 +99,46 @@ export const AuthPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div>
-                <label className="block text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-1">
                   Full Name
                 </label>
                 <div className="relative">
-                  <UserIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                  <UserIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     type="text"
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Alex Mercer"
-                    className="glass-input w-full pl-9 pr-4 py-2.5 rounded-xl text-slate-100 font-sans text-xs focus:outline-none"
+                    className="glass-input w-full pl-9 pr-4 py-2.5 rounded-xl text-white font-sans text-xs focus:outline-none"
                   />
                 </div>
               </div>
             )}
 
             <div>
-              <label className="block text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider mb-1">
+              <label className="block text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-1">
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@docmind.ai"
-                  className="glass-input w-full pl-9 pr-4 py-2.5 rounded-xl text-slate-100 font-sans text-xs focus:outline-none"
+                  className="glass-input w-full pl-9 pr-4 py-2.5 rounded-xl text-white font-sans text-xs focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider mb-1">
+              <label className="block text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-1">
                 Password
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="password"
                   required
@@ -146,7 +146,7 @@ export const AuthPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="glass-input w-full pl-9 pr-4 py-2.5 rounded-xl text-slate-100 font-sans text-xs focus:outline-none"
+                  className="glass-input w-full pl-9 pr-4 py-2.5 rounded-xl text-white font-sans text-xs focus:outline-none"
                 />
               </div>
             </div>
@@ -154,7 +154,7 @@ export const AuthPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-gradient-to-r from-cyber-cyan to-cyber-indigo hover:opacity-90 text-white font-semibold text-xs rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.35)] flex items-center justify-center space-x-2 transition-all disabled:opacity-50"
+              className="w-full py-3 px-4 bg-gradient-to-r from-royal-violet to-royal-sky hover:opacity-90 text-white font-semibold text-xs rounded-xl shadow-[0_0_20px_rgba(79,70,229,0.4)] flex items-center justify-center space-x-2 transition-all disabled:opacity-50"
             >
               <span>{loading ? 'Authenticating...' : isLogin ? 'Sign In to Workstation' : 'Create Account'}</span>
               <ArrowRight className="w-4 h-4" />
@@ -168,7 +168,7 @@ export const AuthPage: React.FC = () => {
                 setIsLogin(!isLogin);
                 setError(null);
               }}
-              className="text-cyber-cyan font-bold hover:underline"
+              className="text-royal-sky font-bold hover:underline"
             >
               {isLogin ? 'Register now' : 'Sign in'}
             </button>

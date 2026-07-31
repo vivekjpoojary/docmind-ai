@@ -57,15 +57,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Welcome Banner */}
-      <div className="relative rounded-3xl p-8 bg-gradient-to-r from-floor via-[#0F1422] to-slate-900 overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-cyber-cyan/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative rounded-3xl p-8 bg-gradient-to-r from-[#0E1422] via-[#12192B] to-[#0A0D16] overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-royal-sky/15 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 max-w-3xl space-y-4">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-cyber-cyan/10 text-cyber-cyan border border-cyber-cyan/30">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-mono font-bold bg-royal-sky/10 text-royal-sky border border-royal-sky/30">
             <Sparkles className="w-3.5 h-3.5" />
             <span>ENTERPRISE DOCUMENT INTELLIGENCE WORKSTATION</span>
           </div>
 
-          <h1 className="text-3xl font-extrabold font-display tracking-tight sm:text-4xl text-gradient-cyan">
+          <h1 className="text-3xl font-extrabold font-display tracking-tight sm:text-4xl text-gradient-royal">
             Document Intelligence Engine
           </h1>
           <p className="text-slate-300 text-sm leading-relaxed max-w-2xl font-sans">
@@ -75,7 +75,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
           <div className="pt-2 flex flex-wrap gap-3">
             <button
               onClick={() => setActiveTab('documents')}
-              className="px-5 py-2.5 bg-gradient-to-r from-cyber-cyan to-cyber-indigo hover:opacity-90 text-white font-semibold text-xs rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.35)] flex items-center space-x-2 transition-all"
+              className="px-5 py-2.5 bg-gradient-to-r from-royal-violet to-royal-sky hover:opacity-90 text-white font-semibold text-xs rounded-xl shadow-[0_0_20px_rgba(79,70,229,0.4)] flex items-center space-x-2 transition-all"
             >
               <UploadCloud className="w-4 h-4" />
               <span>Drop & Index Document</span>
@@ -84,7 +84,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
               onClick={() => setActiveTab('chat')}
               className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-slate-200 font-semibold text-xs rounded-xl border border-white/15 flex items-center space-x-2 transition-all"
             >
-              <MessageSquare className="w-4 h-4 text-cyber-cyan" />
+              <MessageSquare className="w-4 h-4 text-royal-sky" />
               <span>Launch 3-Column Workstation</span>
             </button>
           </div>
@@ -95,37 +95,37 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="glass-panel-interactive p-6 rounded-2xl">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider">
               Total Documents
             </span>
-            <div className="p-2.5 bg-cyber-cyan/10 rounded-xl text-cyber-cyan border border-cyber-cyan/20">
+            <div className="p-2.5 bg-royal-sky/10 rounded-xl text-royal-sky border border-royal-sky/20">
               <FileText className="w-5 h-5" />
             </div>
           </div>
           <p className="mt-4 text-3xl font-extrabold font-display text-white">
             {loading ? '...' : analytics?.total_documents ?? 0}
           </p>
-          <p className="mt-1 text-[11px] font-mono text-slate-500">Indexed Knowledge Vault</p>
+          <p className="mt-1 text-[11px] font-mono text-slate-400">Indexed Knowledge Vault</p>
         </div>
 
         <div className="glass-panel-interactive p-6 rounded-2xl">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider">
               Vector Passages
             </span>
-            <div className="p-2.5 bg-cyber-indigo/10 rounded-xl text-cyber-indigo border border-cyber-indigo/20">
+            <div className="p-2.5 bg-royal-violet/10 rounded-xl text-royal-violet border border-royal-violet/20">
               <Sparkles className="w-5 h-5" />
             </div>
           </div>
           <p className="mt-4 text-3xl font-extrabold font-display text-white">
             {loading ? '...' : analytics?.total_chunks ?? 0}
           </p>
-          <p className="mt-1 text-[11px] font-mono text-slate-500">FAISS Index Embeddings</p>
+          <p className="mt-1 text-[11px] font-mono text-slate-400">FAISS Index Embeddings</p>
         </div>
 
         <div className="glass-panel-interactive p-6 rounded-2xl">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider">
               Recorded QA Sessions
             </span>
             <div className="p-2.5 bg-purple-500/10 rounded-xl text-purple-400 border border-purple-500/20">
@@ -135,22 +135,22 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
           <p className="mt-4 text-3xl font-extrabold font-display text-white">
             {loading ? '...' : analytics?.total_conversations ?? 0}
           </p>
-          <p className="mt-1 text-[11px] font-mono text-slate-500">Grounded AI Dialogues</p>
+          <p className="mt-1 text-[11px] font-mono text-slate-400">Grounded AI Dialogues</p>
         </div>
 
         <div className="glass-panel-interactive p-6 rounded-2xl">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider">
               Storage Footprint
             </span>
-            <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20">
+            <div className="p-2.5 bg-royal-mint/10 rounded-xl text-royal-mint border border-royal-mint/20">
               <HardDrive className="w-5 h-5" />
             </div>
           </div>
           <p className="mt-4 text-3xl font-extrabold font-display text-white">
             {loading ? '...' : formatBytes(analytics?.storage_bytes ?? 0)}
           </p>
-          <p className="mt-1 text-[11px] font-mono text-slate-500">Raw Content + FAISS Files</p>
+          <p className="mt-1 text-[11px] font-mono text-slate-400">Raw Files + FAISS Files</p>
         </div>
       </div>
 
@@ -160,12 +160,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
         <div className="glass-panel p-6 rounded-2xl space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Layers className="w-4 h-4 text-cyber-cyan" />
+              <Layers className="w-4 h-4 text-royal-sky" />
               <h3 className="text-base font-bold font-display text-slate-100">Recent Vault Documents</h3>
             </div>
             <button
               onClick={() => setActiveTab('documents')}
-              className="text-xs font-mono text-cyber-cyan hover:underline flex items-center space-x-1"
+              className="text-xs font-mono text-royal-sky hover:underline flex items-center space-x-1 font-bold"
             >
               <span>Repository</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
@@ -173,7 +173,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
           </div>
 
           {recentDocs.length === 0 ? (
-            <div className="text-center py-8 text-slate-500 text-xs font-mono">
+            <div className="text-center py-8 text-slate-400 text-xs font-mono">
               <FileText className="w-8 h-8 mx-auto mb-2 opacity-30" />
               <span>No documents uploaded yet.</span>
             </div>
@@ -182,10 +182,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
               {recentDocs.map((doc) => (
                 <div
                   key={doc.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-white/5 hover:border-cyber-cyan/30 transition-all"
+                  className="flex items-center justify-between p-3 rounded-xl bg-[#0B0F19] border border-white/5 hover:border-royal-sky/40 transition-all"
                 >
                   <div className="flex items-center space-x-3 truncate">
-                    <div className="p-2 bg-cyber-cyan/10 rounded-lg text-cyber-cyan border border-cyber-cyan/20">
+                    <div className="p-2 bg-royal-sky/10 rounded-lg text-royal-sky border border-royal-sky/20">
                       <FileText className="w-4 h-4" />
                     </div>
                     <div className="truncate">
@@ -197,7 +197,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
                       </p>
                     </div>
                   </div>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-royal-mint/10 text-royal-mint border border-royal-mint/30">
                     <CheckCircle2 className="w-3 h-3 mr-1" /> READY
                   </span>
                 </div>
@@ -210,12 +210,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
         <div className="glass-panel p-6 rounded-2xl space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <MessageSquare className="w-4 h-4 text-cyber-indigo" />
+              <MessageSquare className="w-4 h-4 text-royal-violet" />
               <h3 className="text-base font-bold font-display text-slate-100">Recent Q&A Dialogues</h3>
             </div>
             <button
               onClick={() => setActiveTab('chat')}
-              className="text-xs font-mono text-cyber-indigo hover:underline flex items-center space-x-1"
+              className="text-xs font-mono text-royal-violet hover:underline flex items-center space-x-1 font-bold"
             >
               <span>Workstation</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
@@ -223,7 +223,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
           </div>
 
           {recentChats.length === 0 ? (
-            <div className="text-center py-8 text-slate-500 text-xs font-mono">
+            <div className="text-center py-8 text-slate-400 text-xs font-mono">
               <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-30" />
               <span>No active chat history.</span>
             </div>
@@ -233,10 +233,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
                 <div
                   key={chat.id}
                   onClick={() => setActiveTab('chat')}
-                  className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-white/5 hover:border-cyber-indigo/40 hover:bg-slate-900/90 cursor-pointer transition-all"
+                  className="flex items-center justify-between p-3 rounded-xl bg-[#0B0F19] border border-white/5 hover:border-royal-violet/40 hover:bg-[#0E1422] cursor-pointer transition-all"
                 >
                   <div className="flex items-center space-x-3 truncate">
-                    <div className="p-2 bg-cyber-indigo/10 rounded-lg text-cyber-indigo border border-cyber-indigo/20">
+                    <div className="p-2 bg-royal-violet/10 rounded-lg text-royal-violet border border-royal-violet/20">
                       <MessageSquare className="w-4 h-4" />
                     </div>
                     <div className="truncate">
@@ -244,12 +244,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
                         {chat.title || 'Untitled Session'}
                       </p>
                       <p className="text-[10px] font-mono text-slate-400 flex items-center mt-0.5">
-                        <Clock className="w-3 h-3 mr-1 text-slate-500" />
+                        <Clock className="w-3 h-3 mr-1 text-slate-400" />
                         {new Date(chat.updated_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
-                  <ArrowUpRight className="w-4 h-4 text-slate-500" />
+                  <ArrowUpRight className="w-4 h-4 text-slate-400" />
                 </div>
               ))}
             </div>

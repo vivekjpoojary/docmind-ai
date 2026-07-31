@@ -33,30 +33,30 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenC
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-[#05070B]/85 backdrop-blur-2xl border-b border-white/[0.08] shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+    <header className="sticky top-0 z-40 bg-[#090D16]/90 backdrop-blur-2xl border-b border-white/[0.08] shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo & Hardware Status Indicator */}
+          {/* Logo & Hardware Status LED */}
           <div
             className="flex items-center space-x-3 cursor-pointer select-none group"
             onClick={() => setActiveTab('dashboard')}
           >
-            <div className="relative p-2 bg-gradient-to-br from-cyber-indigo via-indigo-600 to-cyber-cyan rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.35)] group-hover:scale-105 transition-transform">
+            <div className="relative p-2 bg-gradient-to-br from-royal-violet via-indigo-600 to-royal-sky rounded-xl shadow-[0_0_20px_rgba(79,70,229,0.4)] group-hover:scale-105 transition-transform">
               <Brain className="w-5 h-5 text-white" />
-              {/* Pulsing Cyan Status LED */}
-              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-cyber-cyan rounded-full animate-ping" />
-              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-cyber-cyan rounded-full" />
+              {/* Luminous Electric Sky Pulsing LED */}
+              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-royal-sky rounded-full animate-ping" />
+              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-royal-sky rounded-full" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-lg font-bold font-display text-gradient-cyan tracking-tight">
+                <span className="text-lg font-bold font-display text-gradient-royal tracking-tight">
                   DocMind AI
                 </span>
-                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono uppercase font-semibold bg-cyber-cyan/10 text-cyber-cyan border border-cyber-cyan/30">
+                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono uppercase font-semibold bg-royal-sky/10 text-royal-sky border border-royal-sky/30">
                   ONLINE • 99.9%
                 </span>
               </div>
-              <p className="text-[10px] text-slate-500 font-mono tracking-wider uppercase">
+              <p className="text-[10px] text-slate-400 font-mono tracking-wider uppercase">
                 Document Intelligence Workstation
               </p>
             </div>
@@ -64,7 +64,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenC
 
           {/* Navigation Tabs */}
           {user && (
-            <nav className="hidden md:flex items-center space-x-1 bg-slate-900/60 p-1 rounded-2xl border border-white/[0.06]">
+            <nav className="hidden md:flex items-center space-x-1 bg-[#0E1422] p-1 rounded-2xl border border-white/[0.06]">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
@@ -74,11 +74,11 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenC
                     onClick={() => setActiveTab(item.id as TabType)}
                     className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-150 ${
                       isActive
-                        ? 'bg-gradient-to-r from-cyber-cyan/20 to-cyber-indigo/20 text-white font-semibold border border-cyber-cyan/40 shadow-[0_0_15px_rgba(6,182,212,0.2)]'
+                        ? 'bg-gradient-to-r from-royal-violet/30 to-royal-sky/20 text-white font-semibold border border-royal-sky/40 shadow-[0_0_15px_rgba(56,189,248,0.2)]'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
                     }`}
                   >
-                    <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-cyber-cyan' : 'text-slate-400'}`} />
+                    <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-royal-sky' : 'text-slate-400'}`} />
                     <span>{item.label}</span>
                   </button>
                 );
@@ -88,14 +88,13 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenC
 
           {/* Right Section: Command Palette Trigger & User Avatar */}
           <div className="flex items-center space-x-3">
-            {/* Command Palette Button (⌘K) */}
             {onOpenCommandPalette && (
               <button
                 onClick={onOpenCommandPalette}
-                className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-white/10 text-slate-400 hover:text-slate-200 hover:border-cyber-cyan/40 text-xs font-mono transition-all shadow-inner"
+                className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-[#0E1422] border border-white/10 text-slate-400 hover:text-slate-200 hover:border-royal-sky/40 text-xs font-mono transition-all shadow-inner"
                 title="Open Command Palette (⌘K)"
               >
-                <Command className="w-3.5 h-3.5 text-cyber-cyan" />
+                <Command className="w-3.5 h-3.5 text-royal-sky" />
                 <span>Search</span>
                 <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-sans font-semibold text-slate-300">
                   ⌘K
@@ -106,7 +105,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenC
             {user ? (
               <div className="flex items-center space-x-3 pl-3 border-l border-white/10">
                 <div className="flex items-center space-x-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyber-indigo to-cyber-cyan text-white flex items-center justify-center text-xs font-bold shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-royal-violet to-royal-sky text-white flex items-center justify-center text-xs font-bold shadow-[0_0_15px_rgba(79,70,229,0.35)]">
                     {user.full_name ? user.full_name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
                   </div>
                   <div className="hidden lg:block text-left">

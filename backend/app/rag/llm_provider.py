@@ -4,6 +4,7 @@ LLM provider abstraction for answer generation.
 Default: Ollama (local, free, runs on the user's machine — requires
 `ollama pull llama3.1` and the Ollama service running).
 Optional: OpenAI, if LLM_PROVIDER=openai and OPENAI_API_KEY is set.
+Fallback: Context-Passage Direct Synthesis if local LLM is offline.
 """
 
 from app.core.config import settings
@@ -38,12 +39,19 @@ class OllamaLLM(LLMProvider):
             )
             response.raise_for_status()
             return response.json()["message"]["content"].strip()
-        except httpx.ConnectError as exc:
-            raise RuntimeError(
-                "Could not reach Ollama. Is it installed and running? "
-                "Start it with `ollama serve`, and make sure the model is pulled "
-                f"with `ollama pull {self.model}`."
-            ) from exc
+        except (httpx.ConnectError, httpx.HTTPError) as exc:
+            logger.warning(f"Ollama is unreachable or model not pulled: {exc}. Using grounded context fallback.")
+            # Extract retrieved context lines from user_prompt
+            context_part = user_prompt
+            if "CONTEXT:" in user_prompt:
+                context_part = user_prompt.split("CONTEXT:")[-1].split("QUESTION:")[0].strip()
+            
+            return (
+                f"*(Answer generated directly from retrieved document passages)*:\n\n"
+                f"{context_part}\n\n"
+                f"--- \n"
+                f"💡 *Tip: For full AI model rephrasing, start Ollama locally (`ollama serve` & `ollama pull llama3.1`) or set `LLM_PROVIDER=openai` in backend/.env.*"
+            )
 
 
 class OpenAILLM(LLMProvider):

@@ -1,0 +1,86 @@
+export interface User {
+  id: string;
+  email: string;
+  full_name: string;
+  is_admin: boolean;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface AuthTokens {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+}
+
+export interface Document {
+  id: string;
+  filename: string;
+  original_filename: string;
+  file_type: string;
+  file_size: number;
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  chunk_count: number;
+  page_count: number;
+  created_at: string;
+  updated_at: string;
+  error_message?: string | null;
+}
+
+export interface Citation {
+  chunk_id: string;
+  document_id: string;
+  filename: string;
+  page_number: number;
+  content: string;
+  similarity: number;
+}
+
+export interface Message {
+  id: string;
+  sender: 'USER' | 'ASSISTANT';
+  content: string;
+  sources?: Citation[] | null;
+  confidence_score?: number | null;
+  created_at: string;
+}
+
+export interface Conversation {
+  id: string;
+  user_id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+  messages?: Message[];
+}
+
+export interface SearchResult {
+  chunk_id: string;
+  document_id: string;
+  filename: string;
+  page_number: number;
+  content: string;
+  score: number;
+  search_type: 'semantic' | 'keyword' | 'hybrid';
+}
+
+export interface UserAnalytics {
+  document_count: number;
+  chunk_count: number;
+  conversation_count: number;
+  total_storage_bytes: number;
+}
+
+export interface SystemAnalytics {
+  total_users: number;
+  total_documents: number;
+  total_chunks: number;
+  total_conversations: number;
+  total_messages: number;
+  total_storage_bytes: number;
+}
+
+export interface AdminUserListItem extends User {
+  document_count: number;
+  storage_bytes: number;
+}

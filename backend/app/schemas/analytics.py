@@ -24,6 +24,7 @@ class AdminUserRead(BaseModel):
     is_admin: bool
     created_at: datetime
     document_count: int = 0
+    storage_bytes: int = 0
 
 
 class AdminAnalytics(BaseModel):

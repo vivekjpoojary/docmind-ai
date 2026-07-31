@@ -28,18 +28,25 @@ class AdminService:
     async def list_users(self) -> list[AdminUserRead]:
         all_users = await self.users.list_all()
         doc_counts = await self.documents.get_document_count_by_owner()
-        return [
-            AdminUserRead(
-                id=u.id,
-                email=u.email,
-                full_name=u.full_name,
-                is_active=u.is_active,
-                is_admin=u.is_admin,
-                created_at=u.created_at,
-                document_count=doc_counts.get(u.id, 0),
+        
+        # Calculate storage per user
+        result = []
+        for u in all_users:
+            user_docs = await self.documents.list_for_owner(u.id)
+            total_bytes = sum(d.file_size_bytes for d in user_docs)
+            result.append(
+                AdminUserRead(
+                    id=u.id,
+                    email=u.email,
+                    full_name=u.full_name,
+                    is_active=u.is_active,
+                    is_admin=u.is_admin,
+                    created_at=u.created_at,
+                    document_count=doc_counts.get(u.id, 0),
+                    storage_bytes=total_bytes,
+                )
             )
-            for u in all_users
-        ]
+        return result
 
     async def delete_user(self, user_id: str, requesting_admin_id: str) -> None:
         if user_id == requesting_admin_id:

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Shield, Trash2, AlertTriangle } from 'lucide-react';
+import { Shield, Trash2, Users, FileText, HardDrive, HelpCircle } from 'lucide-react';
 import { adminApi } from '../services/api';
 import { SystemAnalytics, AdminUserListItem } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -52,7 +52,7 @@ export const AdminPage: React.FC = () => {
   };
 
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 B';
+    if (!bytes || bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -61,61 +61,102 @@ export const AdminPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      <div className="flex items-center space-x-3">
-        <div className="p-3 bg-amber-500/10 text-amber-500 rounded-2xl border border-amber-500/20">
-          <Shield className="w-7 h-7" />
+      {/* Header */}
+      <div>
+        <div className="flex items-center space-x-2">
+          <Shield className="w-5 h-5 text-amber-400" />
+          <h1 className="text-2xl font-bold font-display text-slate-100">System Admin Moderation Console</h1>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">System Administration Console</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Platform-wide governance, storage monitoring, and user management console.
-          </p>
-        </div>
+        <p className="text-xs font-mono text-slate-400 mt-1">
+          System-wide governance, user account management, and platform resource telemetry.
+        </p>
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 text-sm flex items-center space-x-2">
-          <AlertTriangle className="w-5 h-5 shrink-0" />
-          <span>{error}</span>
+        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-mono">
+          {error}
         </div>
       )}
 
-      {/* System Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-          <p className="text-xs font-semibold text-slate-400 uppercase">Platform Users</p>
-          <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{systemStats?.total_users ?? 0}</p>
+      {/* System Metrics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="glass-panel-interactive p-6 rounded-2xl">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider">
+              Total Platform Users
+            </span>
+            <div className="p-2.5 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20">
+              <Users className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="mt-4 text-3xl font-extrabold font-display text-white">
+            {loading ? '...' : systemStats?.total_users ?? 0}
+          </p>
+          <p className="mt-1 text-[11px] font-mono text-slate-500 font-semibold">Registered Accounts</p>
         </div>
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-          <p className="text-xs font-semibold text-slate-400 uppercase">Total Documents</p>
-          <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{systemStats?.total_documents ?? 0}</p>
+
+        <div className="glass-panel-interactive p-6 rounded-2xl">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider">
+              System Documents
+            </span>
+            <div className="p-2.5 bg-cyber-cyan/10 rounded-xl text-cyber-cyan border border-cyber-cyan/20">
+              <FileText className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="mt-4 text-3xl font-extrabold font-display text-white">
+            {loading ? '...' : systemStats?.total_documents ?? 0}
+          </p>
+          <p className="mt-1 text-[11px] font-mono text-slate-500 font-semibold">All User Files</p>
         </div>
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-          <p className="text-xs font-semibold text-slate-400 uppercase">Total Passages</p>
-          <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{systemStats?.total_chunks ?? 0}</p>
+
+        <div className="glass-panel-interactive p-6 rounded-2xl">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider">
+              Total Questions
+            </span>
+            <div className="p-2.5 bg-purple-500/10 rounded-xl text-purple-400 border border-purple-500/20">
+              <HelpCircle className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="mt-4 text-3xl font-extrabold font-display text-white">
+            {loading ? '...' : systemStats?.total_messages ?? 0}
+          </p>
+          <p className="mt-1 text-[11px] font-mono text-slate-500 font-semibold">RAG Inferences Executed</p>
         </div>
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-          <p className="text-xs font-semibold text-slate-400 uppercase">Conversations</p>
-          <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{systemStats?.total_conversations ?? 0}</p>
-        </div>
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-          <p className="text-xs font-semibold text-slate-400 uppercase">Total Storage</p>
-          <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">{formatBytes(systemStats?.total_storage_bytes ?? 0)}</p>
+
+        <div className="glass-panel-interactive p-6 rounded-2xl">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider">
+              System Storage
+            </span>
+            <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20">
+              <HardDrive className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="mt-4 text-3xl font-extrabold font-display text-white">
+            {loading ? '...' : formatBytes(systemStats?.total_storage_bytes ?? 0)}
+          </p>
+          <p className="mt-1 text-[11px] font-mono text-slate-500 font-semibold">Global FAISS + Files</p>
         </div>
       </div>
 
-      {/* Registered Users Management Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-          <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">User Directory & Storage Footprint</h3>
+      {/* User Moderation Table */}
+      <div className="glass-panel rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-[#0A0D15]">
+          <h3 className="font-bold font-display text-slate-200 text-xs uppercase tracking-wider font-mono">
+            Platform Users ({users.length})
+          </h3>
         </div>
 
         {loading ? (
-          <div className="p-8 text-center text-slate-500 text-sm">Loading user list...</div>
+          <div className="p-8 text-center text-slate-500 font-mono text-xs">
+            Loading platform user list...
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-xs uppercase tracking-wider">
+            <table className="w-full text-left text-xs font-mono">
+              <thead className="bg-slate-950/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-white/5">
                 <tr>
                   <th className="px-6 py-3.5">User</th>
                   <th className="px-6 py-3.5">Role</th>
@@ -125,41 +166,41 @@ export const AdminPage: React.FC = () => {
                   <th className="px-6 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-white/5">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                  <tr key={u.id} className="hover:bg-white/[0.03] transition-colors">
                     <td className="px-6 py-4">
                       <div>
-                        <p className="font-semibold text-slate-900 dark:text-slate-100">{u.full_name || 'User'}</p>
-                        <p className="text-xs text-slate-500">{u.email}</p>
+                        <p className="font-bold text-slate-200 font-sans text-xs">{u.full_name || 'User'}</p>
+                        <p className="text-[10px] text-slate-400 font-mono">{u.email}</p>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       {u.is_admin ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                          Admin
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                          System Admin
                         </span>
                       ) : (
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-white/10 text-slate-300">
                           Standard User
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 font-medium text-slate-800 dark:text-slate-200">
+                    <td className="px-6 py-4 font-bold text-cyber-cyan">
                       {u.document_count} docs
                     </td>
-                    <td className="px-6 py-4 text-xs text-slate-500">
+                    <td className="px-6 py-4 text-slate-400">
                       {formatBytes(u.storage_bytes)}
                     </td>
-                    <td className="px-6 py-4 text-xs text-slate-500">
+                    <td className="px-6 py-4 text-slate-500">
                       {new Date(u.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 text-right">
                       {u.id !== currentUser?.id && (
                         <button
                           onClick={() => handleDeleteUser(u.id, u.email)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors"
-                          title="Delete User & Clear Vectors"
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                          title="Purge User & Purge Vector Index"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

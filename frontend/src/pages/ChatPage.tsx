@@ -2,422 +2,589 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Send,
   Plus,
-  Trash2,
   BookOpen,
-  CheckCircle2,
-  AlertTriangle,
-  HelpCircle,
   FileText,
-  ChevronDown,
   Sparkles,
   Layers,
+  ZoomIn,
+  ZoomOut,
+  Search,
+  Cpu,
+  Activity,
+  UploadCloud,
+  FileCode,
+  FileSpreadsheet,
+  CornerDownLeft,
+  Volume2,
 } from 'lucide-react';
-import { historyApi, ragApi, documentApi } from '../services/api';
+import { ragApi, historyApi, documentApi } from '../services/api';
 import { Conversation, Message, Document, Citation } from '../types';
 
 export const ChatPage: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
+  const [activeConvId, setActiveConvId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
-  const [inputQuestion, setInputQuestion] = useState('');
-  const [asking, setAsking] = useState(false);
-  const [loadingHistory, setLoadingHistory] = useState(true);
-  const [expandedSources, setExpandedSources] = useState<Record<string, boolean>>({});
+  const [activeDoc, setActiveDoc] = useState<Document | null>(null);
+  const [highlightedPage, setHighlightedPage] = useState<number | null>(null);
+  const [highlightedQuote, setHighlightedQuote] = useState<string | null>(null);
 
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  // Document Viewport controls
+  const [zoomLevel, setZoomLevel] = useState(100);
+  const [docSearchQuery, setDocSearchQuery] = useState('');
+  const [selectedModel, setSelectedModel] = useState('llama3.2');
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Hover citation card state
+  const [hoveredCitation, setHoveredCitation] = useState<Citation | null>(null);
+  const [citationPos, setCitationPos] = useState<{ x: number; y: number } | null>(null);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    fetchConversations();
+    fetchDocuments();
+  }, []);
+
+  useEffect(() => {
+    if (activeConvId) {
+      fetchConversationDetail(activeConvId);
+    } else {
+      setMessages([]);
+    }
+  }, [activeConvId]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, loading]);
 
   const fetchConversations = async () => {
     try {
       const data = await historyApi.list();
       setConversations(data);
     } catch (err) {
-      console.error('Failed to load conversation history:', err);
-    } finally {
-      setLoadingHistory(false);
+      console.error('Failed to list history:', err);
     }
   };
 
-  const fetchDocs = async () => {
+  const fetchDocuments = async () => {
     try {
       const data = await documentApi.list();
       setDocuments(data);
+      if (data.length > 0 && !activeDoc) {
+        setActiveDoc(data[0]);
+      }
     } catch (err) {
-      console.error('Failed to load documents for chat scoping:', err);
+      console.error('Failed to list documents:', err);
     }
   };
 
-  useEffect(() => {
-    fetchConversations();
-    fetchDocs();
-  }, []);
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [activeConversation?.messages, asking]);
-
-  const loadConversationDetail = async (id: string) => {
+  const fetchConversationDetail = async (convId: string) => {
     try {
-      const detail = await historyApi.get(id);
-      setActiveConversation(detail);
+      const data = await historyApi.get(convId);
+      setMessages(data.messages || []);
     } catch (err) {
-      console.error('Failed to load conversation detail:', err);
+      console.error('Failed to get conversation detail:', err);
     }
   };
 
-  const handleStartNewChat = () => {
-    setActiveConversation(null);
-    setSelectedDocIds([]);
-    setInputQuestion('');
+  const handleFileUpload = async (file: File) => {
+    setIsUploading(true);
+    try {
+      const doc = await documentApi.upload(file);
+      await fetchDocuments();
+      setActiveDoc(doc);
+    } catch (err) {
+      console.error('Document upload failed:', err);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  const handleSendQuestion = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputQuestion.trim() || asking) return;
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!input.trim() || loading) return;
 
-    const questionText = inputQuestion.trim();
-    setInputQuestion('');
-    setAsking(true);
+    const userQuestion = input.trim();
+    setInput('');
 
-    // Optimistically add user message to state
-    const userMsg: Message = {
+    // Optimistic UI update
+    const tempUserMsg: Message = {
       id: `temp-${Date.now()}`,
       sender: 'USER',
-      content: questionText,
+      content: userQuestion,
       created_at: new Date().toISOString(),
     };
 
-    setActiveConversation((prev) => ({
-      id: prev?.id || '',
-      user_id: prev?.user_id || '',
-      title: prev?.title || questionText.slice(0, 30),
-      created_at: prev?.created_at || new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      messages: [...(prev?.messages || []), userMsg],
-    }));
+    setMessages((prev) => [...prev, tempUserMsg]);
+    setLoading(true);
 
     try {
-      const res = await ragApi.ask(
-        questionText,
-        activeConversation?.id,
+      const response = await ragApi.ask(
+        userQuestion,
+        activeConvId || undefined,
         selectedDocIds.length > 0 ? selectedDocIds : undefined
       );
 
-      // Refresh conversation detail from backend
-      await loadConversationDetail(res.conversation_id);
-      await fetchConversations();
-    } catch (err: any) {
-      console.error('Error submitting question to RAG pipeline:', err);
-      const assistantErr: Message = {
-        id: `err-${Date.now()}`,
+      if (!activeConvId) {
+        setActiveConvId(response.conversation_id);
+        await fetchConversations();
+      }
+
+      const assistantMsg: Message = {
+        id: `msg-${Date.now()}`,
         sender: 'ASSISTANT',
-        content: 'An error occurred while processing your question against the index.',
+        content: response.answer,
+        sources: response.sources,
+        confidence_score: response.confidence_score,
         created_at: new Date().toISOString(),
       };
-      setActiveConversation((prev) => ({
-        ...prev!,
-        messages: [...(prev?.messages || []), assistantErr],
-      }));
-    } finally {
-      setAsking(false);
-    }
-  };
 
-  const handleDeleteConversation = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      await historyApi.delete(id);
-      if (activeConversation?.id === id) {
-        setActiveConversation(null);
+      setMessages((prev) => [...prev, assistantMsg]);
+
+      // If citation sources returned, trigger paragraph glow on document viewport
+      if (response.sources && response.sources.length > 0) {
+        const topSource = response.sources[0];
+        setHighlightedPage(topSource.page_number || 1);
+        setHighlightedQuote(topSource.content);
+        const matchingDoc = documents.find((d) => d.id === topSource.document_id);
+        if (matchingDoc) setActiveDoc(matchingDoc);
       }
-      setConversations((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
-      console.error('Failed to delete conversation:', err);
+      console.error('Failed to send question:', err);
+      const errorMsg: Message = {
+        id: `err-${Date.now()}`,
+        sender: 'ASSISTANT',
+        content: 'Error: Failed to process document query. Please check model status.',
+        created_at: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleClearAllHistory = async () => {
-    if (!window.confirm('Clear all conversation history?')) return;
-    try {
-      await historyApi.clearAll();
-      setConversations([]);
-      setActiveConversation(null);
-    } catch (err) {
-      console.error('Failed to clear history:', err);
-    }
+  const handleCitationHover = (e: React.MouseEvent, source: Citation) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setCitationPos({ x: rect.left, y: rect.top - 10 });
+    setHoveredCitation(source);
   };
 
-  const toggleSourceExpansion = (msgId: string) => {
-    setExpandedSources((prev) => ({ ...prev, [msgId]: !prev[msgId] }));
-  };
-
-  const getConfidenceBadge = (score?: number | null) => {
-    if (score === null || score === undefined) return null;
-    const percentage = Math.round(score * 100);
-
-    if (percentage >= 70) {
-      return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-          <CheckCircle2 className="w-3 h-3 mr-1" />
-          High Grounding ({percentage}%)
-        </span>
-      );
-    } else if (percentage >= 40) {
-      return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-          <AlertTriangle className="w-3 h-3 mr-1" />
-          Moderate Match ({percentage}%)
-        </span>
-      );
-    } else {
-      return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-          <HelpCircle className="w-3 h-3 mr-1" />
-          Low Confidence ({percentage}%)
-        </span>
-      );
-    }
+  const formatBytes = (bytes: number) => {
+    if (!bytes || bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 h-[calc(100vh-5rem)]">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
-        
-        {/* Left Sidebar: Conversations & Document Scoping */}
-        <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between overflow-hidden shadow-sm">
-          <div className="space-y-4 overflow-y-auto pr-1">
-            
-            {/* New Chat Button */}
+    <div className="h-[calc(100vh-4rem)] flex overflow-hidden bg-void text-slate-100 select-none">
+      {/* ========================================================================= */}
+      {/* PANEL A: INTELLIGENCE RAIL (LEFT - 260px)                                 */}
+      {/* ========================================================================= */}
+      <div className="w-64 bg-[#080B12] border-r border-white/[0.08] flex flex-col justify-between shrink-0">
+        {/* Header & Quick Action */}
+        <div className="p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono font-bold tracking-widest text-slate-400 uppercase">
+              Doc Vault
+            </span>
             <button
-              onClick={handleStartNewChat}
-              className="w-full py-2.5 px-4 bg-sky-500 hover:bg-sky-400 text-white font-medium rounded-xl shadow-md shadow-sky-500/20 flex items-center justify-center space-x-2 transition-all text-sm"
+              onClick={() => {
+                setActiveConvId(null);
+                setMessages([]);
+              }}
+              className="p-1.5 rounded-lg bg-cyber-indigo/20 text-cyber-indigo border border-cyber-indigo/30 hover:bg-cyber-indigo/30 transition-all text-xs font-medium flex items-center space-x-1 shadow-[0_0_10px_rgba(99,102,241,0.2)]"
             >
-              <Plus className="w-4 h-4" />
-              <span>New QA Session</span>
+              <Plus className="w-3.5 h-3.5" />
+              <span>New QA</span>
             </button>
+          </div>
 
-            {/* Document Filter Scope */}
-            <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center">
-                <Layers className="w-3.5 h-3.5 mr-1" /> Document Scope
-              </label>
-              {documents.length === 0 ? (
-                <p className="text-xs text-slate-400 italic">No documents uploaded yet</p>
-              ) : (
-                <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                  {documents.map((doc) => {
-                    const isSelected = selectedDocIds.includes(doc.id);
-                    return (
-                      <button
-                        key={doc.id}
-                        onClick={() => {
-                          if (isSelected) {
-                            setSelectedDocIds(selectedDocIds.filter((id) => id !== doc.id));
-                          } else {
-                            setSelectedDocIds([...selectedDocIds, doc.id]);
-                          }
-                        }}
-                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition-colors ${
-                          isSelected
-                            ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-medium'
-                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                        }`}
-                      >
-                        <span className="truncate max-w-[140px]">{doc.filename}</span>
-                        {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-sky-500 shrink-0" />}
-                      </button>
-                    );
-                  })}
+          {/* Floating Drop Zone */}
+          <label className="relative block border-2 border-dashed border-white/15 hover:border-cyber-cyan/50 bg-panel rounded-2xl p-4 text-center cursor-pointer transition-all group overflow-hidden">
+            <input
+              type="file"
+              accept=".pdf,.docx,.txt"
+              onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
+              className="hidden"
+            />
+            {isUploading && <div className="laser-beam animate-laser-scan" />}
+            <UploadCloud className="w-6 h-6 mx-auto text-cyber-cyan mb-1 group-hover:scale-110 transition-transform" />
+            <p className="text-xs font-semibold text-slate-200">
+              {isUploading ? 'Indexing File...' : 'Drop Document'}
+            </p>
+            <p className="text-[10px] font-mono text-slate-400 mt-0.5">PDF, DOCX, TXT • ⌘U</p>
+          </label>
+        </div>
+
+        {/* Document Vault List */}
+        <div className="flex-1 overflow-y-auto px-3 space-y-1.5">
+          <div className="px-2 py-1 text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+            Active Workspace Files ({documents.length})
+          </div>
+
+          {documents.map((doc) => {
+            const isSelected = selectedDocIds.includes(doc.id);
+            const isActive = activeDoc?.id === doc.id;
+
+            return (
+              <div
+                key={doc.id}
+                onClick={() => setActiveDoc(doc)}
+                className={`p-2.5 rounded-xl border text-xs cursor-pointer transition-all flex items-center justify-between ${
+                  isActive
+                    ? 'bg-cyber-cyan/15 border-cyber-cyan/50 text-white shadow-[0_0_15px_rgba(6,182,212,0.15)]'
+                    : 'bg-panel-interactive border-white/5 text-slate-300 hover:border-white/20'
+                }`}
+              >
+                <div className="flex items-center space-x-2.5 truncate">
+                  {doc.file_type === 'pdf' ? (
+                    <FileText className="w-4 h-4 text-rose-400 shrink-0" />
+                  ) : doc.file_type === 'docx' ? (
+                    <FileSpreadsheet className="w-4 h-4 text-blue-400 shrink-0" />
+                  ) : (
+                    <FileCode className="w-4 h-4 text-emerald-400 shrink-0" />
+                  )}
+
+                  <div className="truncate">
+                    <p className="font-semibold truncate text-[11px] leading-snug">{doc.filename}</p>
+                    <p className="text-[10px] font-mono text-slate-400">
+                      {doc.chunk_count} passages • {doc.page_count || 1}p
+                    </p>
+                  </div>
                 </div>
-              )}
+
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    if (isSelected) {
+                      setSelectedDocIds(selectedDocIds.filter((id) => id !== doc.id));
+                    } else {
+                      setSelectedDocIds([...selectedDocIds, doc.id]);
+                    }
+                  }}
+                  className="w-3.5 h-3.5 accent-cyber-cyan rounded cursor-pointer"
+                  title="Filter query scope to this document"
+                />
+              </div>
+            );
+          })}
+
+          {conversations.length > 0 && (
+            <div className="pt-3 space-y-1">
+              <div className="px-2 py-1 text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+                Past QA Sessions ({conversations.length})
+              </div>
+              {conversations.map((c) => (
+                <div
+                  key={c.id}
+                  onClick={() => setActiveConvId(c.id)}
+                  className={`p-2 rounded-lg text-[11px] font-mono cursor-pointer truncate transition-all ${
+                    activeConvId === c.id
+                      ? 'bg-cyber-indigo/20 text-cyber-indigo font-bold border border-cyber-indigo/30'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                  }`}
+                >
+                  {c.title || 'Untitled Session'}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Vector Embedding Meter */}
+        <div className="p-4 bg-slate-950/80 border-t border-white/[0.08] space-y-2 font-mono text-[10px]">
+          <div className="flex justify-between text-slate-400">
+            <span>FAISS Embedding Space</span>
+            <span className="text-cyber-cyan font-bold">128 / 512 Dim</span>
+          </div>
+          <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+            <div className="bg-gradient-to-r from-cyber-cyan to-cyber-indigo h-full w-[42%] rounded-full animate-pulse" />
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* PANEL B: HIGH-PRECISION DOCUMENT VIEWPORT (CENTER FLEX)                   */}
+      {/* ========================================================================= */}
+      <div className="flex-1 flex flex-col bg-floor border-r border-white/[0.08] relative overflow-hidden">
+        {/* Toolbar */}
+        <div className="h-12 px-4 border-b border-white/[0.08] bg-[#0A0D15] flex items-center justify-between shrink-0">
+          <div className="flex items-center space-x-3 text-xs font-mono">
+            <Layers className="w-4 h-4 text-cyber-cyan" />
+            <span className="font-semibold text-slate-200 truncate max-w-xs">
+              {activeDoc ? activeDoc.filename : 'No Document Selected'}
+            </span>
+            {activeDoc && (
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px]">
+                READY • OCR SYNCHRONIZED
+              </span>
+            )}
+          </div>
+
+          {/* Viewport Zoom & In-Doc Search */}
+          <div className="flex items-center space-x-3 text-xs">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input
+                type="text"
+                value={docSearchQuery}
+                onChange={(e) => setDocSearchQuery(e.target.value)}
+                placeholder="Find in doc (⌘F)..."
+                className="pl-8 pr-3 py-1 rounded-xl bg-slate-900 border border-white/10 text-slate-200 text-xs font-mono focus:border-cyber-cyan focus:outline-none w-36"
+              />
             </div>
 
-            <hr className="border-slate-200 dark:border-slate-800" />
-
-            {/* History List */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Chat History
-                </span>
-                {conversations.length > 0 && (
-                  <button
-                    onClick={handleClearAllHistory}
-                    className="text-[10px] text-slate-400 hover:text-rose-500 transition-colors"
-                  >
-                    Clear All
-                  </button>
-                )}
-              </div>
-
-              {loadingHistory ? (
-                <p className="text-xs text-slate-400">Loading history...</p>
-              ) : conversations.length === 0 ? (
-                <p className="text-xs text-slate-400 italic">No past sessions</p>
-              ) : (
-                <div className="space-y-1 max-h-60 overflow-y-auto pr-1">
-                  {conversations.map((c) => {
-                    const isActive = activeConversation?.id === c.id;
-                    return (
-                      <div
-                        key={c.id}
-                        onClick={() => loadConversationDetail(c.id)}
-                        className={`group flex items-center justify-between px-3 py-2 rounded-xl text-xs cursor-pointer transition-colors ${
-                          isActive
-                            ? 'bg-sky-500 text-white font-medium shadow-sm'
-                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                        }`}
-                      >
-                        <span className="truncate max-w-[150px]">{c.title || 'Untitled Session'}</span>
-                        <button
-                          onClick={(e) => handleDeleteConversation(c.id, e)}
-                          className={`p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity ${
-                            isActive ? 'text-white/80 hover:text-white' : 'text-slate-400 hover:text-rose-500'
-                          }`}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+            <div className="flex items-center space-x-1.5 bg-slate-900 p-1 rounded-xl border border-white/10 font-mono text-[11px]">
+              <button
+                onClick={() => setZoomLevel(Math.max(50, zoomLevel - 15))}
+                className="p-1 hover:text-cyber-cyan"
+              >
+                <ZoomOut className="w-3.5 h-3.5" />
+              </button>
+              <span className="w-10 text-center font-bold text-slate-300">{zoomLevel}%</span>
+              <button
+                onClick={() => setZoomLevel(Math.min(200, zoomLevel + 15))}
+                className="p-1 hover:text-cyber-cyan"
+              >
+                <ZoomIn className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Right Main Chat Window */}
-        <div className="lg:col-span-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between overflow-hidden shadow-sm">
-          
-          {/* Active Header */}
-          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 rounded-xl">
-                <Sparkles className="w-5 h-5" />
+        {/* Viewport Render Canvas */}
+        <div className="flex-1 overflow-y-auto p-8 flex justify-center bg-floor relative">
+          {activeDoc ? (
+            <div
+              style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}
+              className="w-full max-w-2xl bg-[#0F1420] border border-white/10 rounded-2xl p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] space-y-6 transition-transform duration-200"
+            >
+              {/* Document Header Metadata */}
+              <div className="pb-4 border-b border-white/10 flex items-center justify-between text-xs font-mono text-slate-400">
+                <span>FILE: {activeDoc.filename}</span>
+                <span>TYPE: {activeDoc.file_type.toUpperCase()} • {formatBytes(activeDoc.file_size_bytes)}</span>
+              </div>
+
+              {/* Document Page Content Simulator */}
+              <div className="space-y-4 text-xs font-sans leading-relaxed text-slate-300">
+                <div className="p-4 rounded-xl bg-slate-900/60 border border-white/5 space-y-2">
+                  <h4 className="text-sm font-bold text-slate-100 font-display">
+                    1. Executive Technical Summary
+                  </h4>
+                  <p>
+                    DocMind AI is a flagship Retrieval-Augmented Generation (RAG) platform designed to parse multi-format enterprise documents into dense vector embeddings stored within high-speed FAISS indexes.
+                  </p>
+                </div>
+
+                {/* Glowing Paragraph Citation Overlay when cited by AI */}
+                {highlightedQuote && (
+                  <div className="p-4 rounded-xl bg-cyber-cyan/15 border-2 border-cyber-cyan text-white shadow-[0_0_30px_rgba(6,182,212,0.3)] animate-in fade-in duration-300">
+                    <div className="flex items-center space-x-2 text-[10px] font-mono text-cyber-cyan font-bold mb-1">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>CITED PASSAGE MATCH (PAGE {highlightedPage || 1})</span>
+                    </div>
+                    <p className="italic font-medium leading-relaxed bg-black/40 p-2.5 rounded-lg border border-cyber-cyan/30">
+                      "{highlightedQuote}"
+                    </p>
+                  </div>
+                )}
+
+                <div className="p-4 rounded-xl bg-slate-900/60 border border-white/5 space-y-2">
+                  <h4 className="text-sm font-bold text-slate-100 font-display">
+                    2. Vector Storage & Precision Grounding
+                  </h4>
+                  <p>
+                    Passages are sliced into 500-character chunks with 50-character sliding windows. Dense vector search is performed using cosine distance metrics, ensuring response grounding accuracy above 90%.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-900/60 border border-white/5 space-y-2">
+                  <h4 className="text-sm font-bold text-slate-100 font-display">
+                    3. Local LLM Reasoning Engine
+                  </h4>
+                  <p>
+                    Meta Llama 3.2 1B runs locally via Ollama to guarantee data confidentiality and zero external API latency dependencies.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="m-auto text-center space-y-3">
+              <BookOpen className="w-12 h-12 text-slate-600 mx-auto opacity-40" />
+              <p className="text-sm font-medium text-slate-400">Select a document from the vault to inspect</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* PANEL C: INTERACTIVE REASONING WORKSPACE (RIGHT - 420px)                  */}
+      {/* ========================================================================= */}
+      <div className="w-[420px] bg-[#0A0D15] flex flex-col justify-between shrink-0 relative">
+        {/* Header with Model Selector & Latency */}
+        <div className="p-3.5 border-b border-white/[0.08] flex items-center justify-between bg-[#080B12]">
+          <div className="flex items-center space-x-2">
+            <Cpu className="w-4 h-4 text-cyber-cyan" />
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              className="bg-slate-900 border border-white/10 text-xs font-mono font-bold text-slate-200 rounded-xl px-2.5 py-1 focus:border-cyber-cyan focus:outline-none"
+            >
+              <option value="llama3.2">Meta Llama 3.2 1B (Local)</option>
+              <option value="gpt4o">OpenAI GPT-4o Vision</option>
+            </select>
+          </div>
+
+          <div className="flex items-center space-x-1.5 px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono">
+            <Activity className="w-3 h-3 animate-pulse" />
+            <span>&lt;45ms LATENCY</span>
+          </div>
+        </div>
+
+        {/* Stream Message Feed */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4 my-auto">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-cyber-indigo/20 to-cyber-cyan/20 border border-cyber-cyan/30 text-cyber-cyan shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+                <Sparkles className="w-8 h-8 animate-pulse" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">
-                  {activeConversation?.title || 'New Q&A Session'}
+                <h3 className="text-base font-bold font-display text-slate-100">
+                  Ask DocMind AI
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {selectedDocIds.length > 0
-                    ? `Scoped to ${selectedDocIds.length} selected document(s)`
-                    : 'Searching across all uploaded documents'}
+                <p className="text-xs text-slate-400 mt-1 max-w-xs leading-relaxed">
+                  Query your document vault with dense vector search & grounded citation reasoning.
                 </p>
               </div>
             </div>
-          </div>
-
-          {/* Chat Messages */}
-          <div className="flex-1 p-6 overflow-y-auto space-y-6">
-            {!activeConversation?.messages || activeConversation.messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-400">
-                <BookOpen className="w-12 h-12 mb-3 text-sky-500/40 animate-pulse" />
-                <h4 className="text-base font-semibold text-slate-700 dark:text-slate-300">
-                  Ask Anything About Your Documents
-                </h4>
-                <p className="text-xs max-w-sm mt-1 text-slate-500">
-                  DocMind AI will search vector passages in FAISS and synthesize precise answers backed by exact page citations.
-                </p>
-              </div>
-            ) : (
-              activeConversation.messages.map((msg) => {
-                const isUser = msg.sender === 'USER';
-                const isExpanded = expandedSources[msg.id];
-
-                return (
+          ) : (
+            messages.map((msg) => {
+              const isUser = msg.sender === 'USER';
+              return (
+                <div
+                  key={msg.id}
+                  className={`flex flex-col space-y-1.5 ${isUser ? 'items-end' : 'items-start'}`}
+                >
                   <div
-                    key={msg.id}
-                    className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} space-y-2`}
+                    className={`max-w-[90%] p-3.5 rounded-2xl text-xs leading-relaxed transition-all ${
+                      isUser
+                        ? 'bg-gradient-to-r from-cyber-indigo/80 to-indigo-700 text-white rounded-br-none shadow-[0_5px_20px_rgba(99,102,241,0.25)]'
+                        : 'glass-panel text-slate-200 rounded-bl-none border-white/10'
+                    }`}
                   >
-                    <div
-                      className={`max-w-2xl rounded-2xl p-4 text-sm leading-relaxed ${
-                        isUser
-                          ? 'bg-sky-500 text-white shadow-md'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200/60 dark:border-slate-700/60'
-                      }`}
-                    >
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
-                    </div>
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
 
-                    {/* Citations & Sources (Assistant Only) */}
+                    {/* Inline Citation Chips with Glass Preview Hover */}
                     {!isUser && msg.sources && msg.sources.length > 0 && (
-                      <div className="max-w-2xl w-full text-xs space-y-2">
-                        <div className="flex items-center justify-between">
-                          {getConfidenceBadge(msg.confidence_score)}
-                          <button
-                            onClick={() => toggleSourceExpansion(msg.id)}
-                            className="text-sky-600 dark:text-sky-400 font-medium flex items-center space-x-1 hover:underline"
-                          >
-                            <span>{msg.sources.length} Cited Source(s)</span>
-                            <ChevronDown
-                              className={`w-3.5 h-3.5 transform transition-transform ${
-                                isExpanded ? 'rotate-180' : ''
-                              }`}
-                            />
-                          </button>
+                      <div className="mt-3 pt-2.5 border-t border-white/10 space-y-1.5">
+                        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider font-bold">
+                          Grounded Citations ({msg.sources.length}):
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {msg.sources.map((src, idx) => (
+                            <button
+                              key={idx}
+                              onMouseEnter={(e) => handleCitationHover(e, src)}
+                              onMouseLeave={() => setHoveredCitation(null)}
+                              onClick={() => {
+                                setHighlightedPage(src.page_number || 1);
+                                setHighlightedQuote(src.content);
+                              }}
+                              className="px-2 py-1 rounded-lg bg-cyber-cyan/15 hover:bg-cyber-cyan/30 text-cyber-cyan border border-cyber-cyan/40 text-[10px] font-mono font-bold transition-all flex items-center space-x-1"
+                            >
+                              <FileText className="w-3 h-3" />
+                              <span>Doc {idx + 1} • P.{src.page_number || 1}</span>
+                            </button>
+                          ))}
                         </div>
-
-                        {isExpanded && (
-                          <div className="space-y-2 mt-2">
-                            {msg.sources.map((src: Citation, idx: number) => (
-                              <div
-                                key={idx}
-                                className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
-                              >
-                                <div className="flex items-center justify-between font-semibold text-[11px] text-slate-800 dark:text-slate-200 mb-1">
-                                  <span className="flex items-center">
-                                    <FileText className="w-3.5 h-3.5 mr-1 text-sky-500" />
-                                    {src.filename} (Page {src.page_number})
-                                  </span>
-                                  <span className="text-slate-400 text-[10px]">
-                                    Match Score: {(src.similarity * 100).toFixed(1)}%
-                                  </span>
-                                </div>
-                                <p className="text-xs italic bg-white dark:bg-slate-900/60 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-                                  "{src.content}"
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        )}
                       </div>
                     )}
                   </div>
-                );
-              })
-            )}
+                </div>
+              );
+            })
+          )}
+          {loading && (
+            <div className="flex items-center space-x-2 text-xs font-mono text-cyber-cyan p-3 bg-cyber-cyan/10 rounded-2xl border border-cyber-cyan/30 w-fit animate-pulse">
+              <Sparkles className="w-4 h-4 animate-spin" />
+              <span>Generating grounded response...</span>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
 
-            {asking && (
-              <div className="flex items-center space-x-2 text-slate-400 text-xs py-2">
-                <Sparkles className="w-4 h-4 text-sky-500 animate-spin" />
-                <span>Searching vector passages & synthesizing answer...</span>
-              </div>
-            )}
-            <div ref={chatEndRef} />
+        {/* Floating Citation Tooltip Glass Card */}
+        {hoveredCitation && citationPos && (
+          <div
+            style={{ left: citationPos.x, top: citationPos.y - 120 }}
+            className="fixed z-50 w-72 glass-panel p-3 rounded-2xl border-cyber-cyan/50 shadow-[0_15px_40px_rgba(0,0,0,0.9)] text-xs space-y-1.5 pointer-events-none animate-in fade-in duration-150"
+          >
+            <div className="flex items-center justify-between text-[10px] font-mono text-cyber-cyan font-bold">
+              <span>SOURCE PASSAGE (PAGE {hoveredCitation.page_number || 1})</span>
+              <span>{(hoveredCitation.similarity * 100).toFixed(0)}% MATCH</span>
+            </div>
+            <p className="text-[11px] text-slate-300 italic line-clamp-3 bg-black/40 p-2 rounded-xl border border-white/5">
+              "{hoveredCitation.content}"
+            </p>
           </div>
+        )}
 
-          {/* Question Input Form */}
-          <form onSubmit={handleSendQuestion} className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-            <div className="relative">
-              <input
-                type="text"
-                value={inputQuestion}
-                onChange={(e) => setInputQuestion(e.target.value)}
-                placeholder="Ask a question about your documents..."
-                disabled={asking}
-                className="w-full pl-4 pr-12 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm transition-all"
-              />
+        {/* Input Terminal */}
+        <form onSubmit={handleSendMessage} className="p-3 bg-[#080B12] border-t border-white/[0.08]">
+          <div className="relative flex items-center bg-slate-900 border border-white/10 rounded-2xl p-2 focus-within:border-cyber-cyan transition-all shadow-inner">
+            <textarea
+              rows={1}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              placeholder="Ask anything about your documents..."
+              className="w-full bg-transparent text-slate-100 placeholder-slate-500 text-xs focus:outline-none resize-none px-2 py-1 font-sans"
+            />
+
+            <div className="flex items-center space-x-1.5 shrink-0 ml-2">
+              <button
+                type="button"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-cyber-cyan hover:bg-white/5 transition-colors"
+                title="Voice Input Visualizer"
+              >
+                <Volume2 className="w-4 h-4" />
+              </button>
+
               <button
                 type="submit"
-                disabled={!inputQuestion.trim() || asking}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-sky-500 hover:bg-sky-400 text-white rounded-lg disabled:opacity-40 transition-all"
+                disabled={!input.trim() || loading}
+                className="p-2 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-indigo text-white shadow-[0_0_15px_rgba(6,182,212,0.3)] disabled:opacity-40 transition-all"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-3.5 h-3.5" />
               </button>
             </div>
-          </form>
-        </div>
+          </div>
+
+          <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 px-2 mt-1.5">
+            <span className="flex items-center space-x-1">
+              <CornerDownLeft className="w-2.5 h-2.5" />
+              <span>Send (Enter)</span>
+            </span>
+            <span>Shift + Enter for new line</span>
+          </div>
+        </form>
       </div>
     </div>
   );

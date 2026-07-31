@@ -18,6 +18,7 @@ import {
   Mic,
   MicOff,
   Download,
+  MessageSquare,
 } from 'lucide-react';
 import { ragApi, historyApi, documentApi } from '../services/api';
 import { Conversation, Message, Document, Citation } from '../types';
@@ -33,6 +34,9 @@ export const ChatPage: React.FC = () => {
   const [activeDoc, setActiveDoc] = useState<Document | null>(null);
   const [highlightedPage, setHighlightedPage] = useState<number | null>(null);
   const [highlightedQuote, setHighlightedQuote] = useState<string | null>(null);
+
+  // Mobile Workstation Column Switcher: 'vault' | 'viewport' | 'chat'
+  const [mobileTab, setMobileTab] = useState<'vault' | 'viewport' | 'chat'>('chat');
 
   // Document Viewport controls
   const [zoomLevel, setZoomLevel] = useState(100);
@@ -257,9 +261,46 @@ export const ChatPage: React.FC = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex overflow-hidden bg-[#090D16] text-white select-none">
-      {/* PANEL A: INTELLIGENCE RAIL (LEFT - 260px) */}
-      <div className="w-64 bg-[#0A0E1A] border-r border-white/[0.08] flex flex-col justify-between shrink-0">
+    <div className="h-[calc(100vh-4.25rem)] flex flex-col lg:flex-row overflow-hidden bg-[#090D16] text-white select-none pb-12 md:pb-0">
+      {/* Mobile Column Tab Selector (lg:hidden) */}
+      <div className="lg:hidden flex items-center justify-around bg-[#0B0F1B] border-b border-white/10 p-2 shrink-0">
+        <button
+          onClick={() => setMobileTab('vault')}
+          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all ${
+            mobileTab === 'vault' ? 'bg-royal-sky/20 text-royal-sky border border-royal-sky/40' : 'text-slate-400'
+          }`}
+        >
+          <Layers className="w-3.5 h-3.5" />
+          <span>Vault ({documents.length})</span>
+        </button>
+
+        <button
+          onClick={() => setMobileTab('viewport')}
+          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all ${
+            mobileTab === 'viewport' ? 'bg-royal-sky/20 text-royal-sky border border-royal-sky/40' : 'text-slate-400'
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5" />
+          <span>Doc View</span>
+        </button>
+
+        <button
+          onClick={() => setMobileTab('chat')}
+          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all ${
+            mobileTab === 'chat' ? 'bg-royal-violet/20 text-royal-violet border border-royal-violet/40' : 'text-slate-400'
+          }`}
+        >
+          <MessageSquare className="w-3.5 h-3.5" />
+          <span>AI Reasoner</span>
+        </button>
+      </div>
+
+      {/* PANEL A: INTELLIGENCE RAIL (LEFT - 260px desktop, full on mobile) */}
+      <div
+        className={`w-full lg:w-64 bg-[#0A0E1A] border-r border-white/[0.08] flex flex-col justify-between shrink-0 ${
+          mobileTab === 'vault' ? 'flex flex-1' : 'hidden lg:flex'
+        }`}
+      >
         <div className="p-4 space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono font-bold tracking-widest text-slate-400 uppercase">
@@ -269,6 +310,7 @@ export const ChatPage: React.FC = () => {
               onClick={() => {
                 setActiveConvId(null);
                 setMessages([]);
+                setMobileTab('chat');
               }}
               className="p-1.5 rounded-lg bg-royal-violet/20 text-royal-violet border border-royal-violet/40 hover:bg-royal-violet/30 transition-all text-xs font-semibold flex items-center space-x-1 shadow-[0_0_12px_rgba(79,70,229,0.3)]"
             >
@@ -307,7 +349,10 @@ export const ChatPage: React.FC = () => {
             return (
               <div
                 key={doc.id}
-                onClick={() => setActiveDoc(doc)}
+                onClick={() => {
+                  setActiveDoc(doc);
+                  setMobileTab('viewport');
+                }}
                 className={`p-2.5 rounded-xl border text-xs cursor-pointer transition-all flex items-center justify-between ${
                   isActive
                     ? 'bg-royal-sky/15 border-royal-sky/50 text-white shadow-[0_0_15px_rgba(56,189,248,0.2)]'
@@ -357,7 +402,10 @@ export const ChatPage: React.FC = () => {
               {conversations.map((c) => (
                 <div
                   key={c.id}
-                  onClick={() => setActiveConvId(c.id)}
+                  onClick={() => {
+                    setActiveConvId(c.id);
+                    setMobileTab('chat');
+                  }}
                   className={`p-2 rounded-lg text-[11px] font-mono cursor-pointer truncate transition-all ${
                     activeConvId === c.id
                       ? 'bg-royal-violet/20 text-royal-violet font-bold border border-royal-violet/40'
@@ -383,8 +431,12 @@ export const ChatPage: React.FC = () => {
         </div>
       </div>
 
-      {/* PANEL B: HIGH-PRECISION DOCUMENT VIEWPORT (CENTER FLEX) */}
-      <div className="flex-1 flex flex-col bg-[#0E1422] border-r border-white/[0.08] relative overflow-hidden">
+      {/* PANEL B: HIGH-PRECISION DOCUMENT VIEWPORT (CENTER FLEX desktop, full on mobile) */}
+      <div
+        className={`flex-1 flex flex-col bg-[#0E1422] border-r border-white/[0.08] relative overflow-hidden ${
+          mobileTab === 'viewport' ? 'flex flex-1' : 'hidden lg:flex'
+        }`}
+      >
         {/* Toolbar */}
         <div className="h-12 px-4 border-b border-white/[0.08] bg-[#0B0F1B] flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-3 text-xs font-mono">
@@ -393,7 +445,7 @@ export const ChatPage: React.FC = () => {
               {activeDoc ? activeDoc.filename : 'No Document Selected'}
             </span>
             {activeDoc && (
-              <span className="px-2 py-0.5 rounded-full bg-royal-mint/10 text-royal-mint border border-royal-mint/30 text-[10px] font-bold">
+              <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full bg-royal-mint/10 text-royal-mint border border-royal-mint/30 text-[10px] font-bold">
                 READY • OCR SYNCHRONIZED
               </span>
             )}
@@ -406,8 +458,8 @@ export const ChatPage: React.FC = () => {
                 type="text"
                 value={docSearchQuery}
                 onChange={(e) => setDocSearchQuery(e.target.value)}
-                placeholder="Find in doc (⌘F)..."
-                className="pl-8 pr-3 py-1 rounded-xl bg-[#090D16] border border-white/10 text-slate-200 text-xs font-mono focus:border-royal-sky focus:outline-none w-36"
+                placeholder="Find in doc..."
+                className="pl-8 pr-3 py-1 rounded-xl bg-[#090D16] border border-white/10 text-slate-200 text-xs font-mono focus:border-royal-sky focus:outline-none w-28 sm:w-36"
               />
             </div>
 
@@ -418,7 +470,7 @@ export const ChatPage: React.FC = () => {
               >
                 <ZoomOut className="w-3.5 h-3.5" />
               </button>
-              <span className="w-10 text-center font-bold text-slate-300">{zoomLevel}%</span>
+              <span className="w-8 sm:w-10 text-center font-bold text-slate-300">{zoomLevel}%</span>
               <button
                 onClick={() => setZoomLevel(Math.min(200, zoomLevel + 15))}
                 className="p-1 hover:text-royal-sky"
@@ -430,11 +482,11 @@ export const ChatPage: React.FC = () => {
         </div>
 
         {/* Viewport Render Canvas */}
-        <div className="flex-1 overflow-y-auto p-8 flex justify-center bg-[#070A11] relative">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 flex justify-center bg-[#070A11] relative">
           {activeDoc ? (
             <div
               style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}
-              className="w-full max-w-2xl bg-[#0E1422] border border-white/10 rounded-2xl p-8 shadow-[0_20px_60px_rgba(0,0,0,0.85)] space-y-6 transition-transform duration-200"
+              className="w-full max-w-2xl bg-[#0E1422] border border-white/10 rounded-2xl p-4 sm:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.85)] space-y-6 transition-transform duration-200"
             >
               <div className="pb-4 border-b border-white/10 flex items-center justify-between text-xs font-mono text-slate-400">
                 <span>FILE: {activeDoc.filename}</span>
@@ -492,8 +544,12 @@ export const ChatPage: React.FC = () => {
         </div>
       </div>
 
-      {/* PANEL C: INTERACTIVE REASONING WORKSPACE (RIGHT - 420px) */}
-      <div className="w-[420px] bg-[#0A0E1A] flex flex-col justify-between shrink-0 relative">
+      {/* PANEL C: INTERACTIVE REASONING WORKSPACE (RIGHT - 420px desktop, full on mobile) */}
+      <div
+        className={`w-full lg:w-[420px] bg-[#0A0E1A] flex flex-col justify-between shrink-0 relative ${
+          mobileTab === 'chat' ? 'flex flex-1' : 'hidden lg:flex'
+        }`}
+      >
         <div className="p-3.5 border-b border-white/[0.08] flex items-center justify-between bg-[#080B12]">
           <div className="flex items-center space-x-2">
             <Cpu className="w-4 h-4 text-royal-sky" />
@@ -573,6 +629,7 @@ export const ChatPage: React.FC = () => {
                               onClick={() => {
                                 setHighlightedPage(src.page_number || 1);
                                 setHighlightedQuote(src.excerpt || src.content);
+                                setMobileTab('viewport');
                               }}
                               className="px-2.5 py-1 rounded-lg bg-royal-sky/15 hover:bg-royal-sky/30 text-royal-sky border border-royal-sky/40 text-[10px] font-mono font-bold transition-all flex items-center space-x-1"
                             >

@@ -1,6 +1,6 @@
 """Data access layer for Document and DocumentChunk entities."""
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.document import Document, DocumentChunk, DocumentStatus
@@ -94,3 +94,73 @@ class DocumentRepository:
             select(DocumentChunk.vector_id).where(DocumentChunk.document_id == document_id)
         )
         return [row[0] for row in result.all()]
+
+    async def keyword_search_chunks(
+        self,
+        owner_id: str,
+        query: str,
+        document_ids: list[str] | None = None,
+        limit: int = 50,
+    ) -> list[DocumentChunk]:
+        """
+        Simple case-insensitive substring search across this user's chunks.
+        Joined against Document to enforce ownership (a user can only
+        keyword-search their own documents).
+        """
+        stmt = (
+            select(DocumentChunk)
+            .join(Document, Document.id == DocumentChunk.document_id)
+            .where(Document.owner_id == owner_id)
+            .where(DocumentChunk.content.ilike(f"%{query}%"))
+        )
+        if document_ids:
+            stmt = stmt.where(DocumentChunk.document_id.in_(document_ids))
+        stmt = stmt.limit(limit)
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get_owner_storage_stats(self, owner_id: str) -> dict:
+        """Aggregate page/chunk/storage totals for one user's documents."""
+        result = await self.db.execute(
+            select(
+                func.count(Document.id),
+                func.coalesce(func.sum(Document.page_count), 0),
+                func.coalesce(func.sum(Document.chunk_count), 0),
+                func.coalesce(func.sum(Document.file_size_bytes), 0),
+            ).where(Document.owner_id == owner_id)
+        )
+        total_docs, total_pages, total_chunks, total_bytes = result.one()
+        return {
+            "total_documents": total_docs,
+            "total_pages": total_pages,
+            "total_chunks": total_chunks,
+            "storage_bytes": total_bytes,
+        }
+
+    async def get_document_count_by_owner(self) -> dict[str, int]:
+        """Map of owner_id -> document count, for admin user listings."""
+        result = await self.db.execute(
+            select(Document.owner_id, func.count(Document.id)).group_by(Document.owner_id)
+        )
+        return {owner_id: count for owner_id, count in result.all()}
+
+    async def get_platform_stats(self) -> dict:
+        """Aggregate totals across ALL users' documents, for admin analytics."""
+        totals = await self.db.execute(
+            select(
+                func.count(Document.id),
+                func.coalesce(func.sum(Document.file_size_bytes), 0),
+            )
+        )
+        total_docs, total_bytes = totals.one()
+
+        by_status = await self.db.execute(
+            select(Document.status, func.count(Document.id)).group_by(Document.status)
+        )
+        status_counts = {status.value: count for status, count in by_status.all()}
+
+        return {
+            "total_documents": total_docs,
+            "total_storage_bytes": total_bytes,
+            "documents_by_status": status_counts,
+        }

@@ -69,11 +69,37 @@ useful for anyone re-running this project fresh):
   (`ollama pull llama3.1`) — otherwise you'll get a clear error message
   telling you exactly that, not a silent failure.
 
-## ⏭ Part 3 — History, Search, Analytics, Admin (next)
+## ✅ Part 3 — History, Search, Analytics, Admin (this delivery)
 
-- `/history /analytics` endpoints (conversation list/detail already stored — just needs routes)
-- Keyword + semantic + hybrid search, metadata filters (doc/date)
-- Admin endpoints: delete user, delete document, usage analytics
+- `schemas/history.py`, `schemas/search.py`, `schemas/analytics.py`
+- Repository additions: `ConversationRepository` (counts, delete-all-for-owner),
+  `DocumentRepository` (keyword search via `ilike`, owner storage stats,
+  document-count-by-owner, platform-wide stats)
+- `services/history_service.py` — list/detail/delete conversations
+- `services/search_service.py` — semantic (FAISS), keyword (SQL `ilike`), and
+  hybrid (merges both, boosts chunks found by both methods) search, with
+  optional `document_ids` and upload-date-range filtering
+- `services/analytics_service.py` — per-user dashboard stats + platform-wide
+  admin stats
+- `services/admin_service.py` — list all users, delete a user (properly
+  cleans up their FAISS vectors + files via `DocumentService.delete()` first,
+  rather than a raw cascade delete that would leave orphaned vectors/files),
+  delete any user's document (moderation), admin can't delete their own
+  account through this endpoint
+- New endpoints: `GET/DELETE /history`, `GET/DELETE /history/{id}`,
+  `GET /analytics`, `POST /search`, `GET /admin/users`,
+  `DELETE /admin/users/{id}`, `DELETE /admin/documents/{id}`,
+  `GET /admin/analytics`
+- Tests: `test_history.py`, `test_search.py`, `test_admin.py` — 19 new tests
+  covering history creation/detail/delete/clear-all, all 3 search modes +
+  document-id filtering, and admin access control (including the
+  first-user-becomes-admin behavior and the can't-delete-self guard)
+
+**Bug caught before shipping:** `MessageRead.sources` initially wouldn't have
+populated at all — the ORM field is `sources_json` but the Pydantic field was
+named `sources`, and with `from_attributes=True` Pydantic looks for an
+attribute with the *exact same name*, so it would've silently returned `None`
+for every message's citations forever. Fixed with `validation_alias="sources_json"`.
 
 ## ⏭ Part 4 — Frontend (React + Vite + TS + Tailwind + shadcn)
 
@@ -84,4 +110,4 @@ useful for anyone re-running this project fresh):
 - `docker-compose.yml` (backend, frontend, nginx), GitHub Actions, README, architecture/sequence diagrams
 
 ---
-**Say "continue" or "part 3"** and I'll proceed into history/search/analytics/admin.
+**Say "continue" or "part 4"** and I'll proceed into the React frontend.

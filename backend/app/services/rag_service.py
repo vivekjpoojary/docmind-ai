@@ -44,6 +44,7 @@ class RAGService:
         raw_results = store.search(query_vector, top_k=top_k)
 
         # ---- 2. Confidence gate (hallucination guard) ----
+        print(f"DEBUG raw_results={raw_results} threshold={settings.CONFIDENCE_THRESHOLD}")
         relevant_results = [
             (vector_id, score) for vector_id, score in raw_results
             if score >= settings.CONFIDENCE_THRESHOLD

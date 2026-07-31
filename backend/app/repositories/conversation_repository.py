@@ -2,7 +2,7 @@
 
 import json
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -59,3 +59,37 @@ class ConversationRepository:
         await self.db.commit()
         await self.db.refresh(message)
         return message
+
+    async def count_conversations_for_owner(self, owner_id: str) -> int:
+        result = await self.db.execute(
+            select(func.count(Conversation.id)).where(Conversation.owner_id == owner_id)
+        )
+        return result.scalar_one()
+
+    async def count_user_questions_for_owner(self, owner_id: str) -> int:
+        """Count messages with role='user' across all of this user's conversations."""
+        result = await self.db.execute(
+            select(func.count(Message.id))
+            .join(Conversation, Conversation.id == Message.conversation_id)
+            .where(Conversation.owner_id == owner_id, Message.role == "user")
+        )
+        return result.scalar_one()
+
+    async def count_platform_questions(self) -> int:
+        result = await self.db.execute(
+            select(func.count(Message.id)).where(Message.role == "user")
+        )
+        return result.scalar_one()
+
+    async def count_platform_conversations(self) -> int:
+        result = await self.db.execute(select(func.count(Conversation.id)))
+        return result.scalar_one()
+
+    async def delete_all_for_owner(self, owner_id: str) -> int:
+        """Delete every conversation (and cascade messages) for a user. Returns count deleted."""
+        conversations = await self.list_for_owner(owner_id)
+        count = len(conversations)
+        for conversation in conversations:
+            await self.db.delete(conversation)
+        await self.db.commit()
+        return count

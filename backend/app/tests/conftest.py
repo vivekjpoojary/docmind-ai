@@ -1,81 +1,67 @@
-"""Shared pytest fixtures: isolated in-memory test DB + async HTTP client."""
-
-from collections.abc import AsyncGenerator
-
-import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.database.session import Base, get_db
+import app.rag.vector_store.faiss_store as faiss_store_module
+import app.services.document_service as document_service_module
+import app.services.rag_service as rag_service_module
+import app.services.search_service as search_service_module
+from app.core.config import settings
+from app.database import session as session_module
+from app.database.session import Base
 from app.main import app
 from app.tests.fakes import FakeEmbeddingProvider, FakeLLM
 
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
-test_engine = create_async_engine(TEST_DATABASE_URL, future=True)
-TestSessionLocal = async_sessionmaker(bind=test_engine, class_=AsyncSession, expire_on_commit=False)
+@pytest_asyncio.fixture
+async def client(tmp_path, monkeypatch):
+    db_path = tmp_path / "test_app.db"
+    faiss_dir = tmp_path / "faiss_index"
+    upload_dir = tmp_path / "uploads"
 
+    monkeypatch.setattr(settings, "DATABASE_URL", f"sqlite+aiosqlite:///{db_path}")
+    monkeypatch.setattr(settings, "FAISS_INDEX_DIR", str(faiss_dir))
+    monkeypatch.setattr(settings, "UPLOAD_DIR", str(upload_dir))
 
-@pytest_asyncio.fixture(autouse=True)
-async def _setup_db():
-    async with test_engine.begin() as conn:
+    engine = create_async_engine(settings.DATABASE_URL, echo=False, future=True)
+    session_factory = async_sessionmaker(
+        bind=engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autoflush=False,
+    )
+
+    monkeypatch.setattr(session_module, "engine", engine)
+    monkeypatch.setattr(session_module, "AsyncSessionLocal", session_factory)
+
+    async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    yield
-    async with test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-
-
-@pytest.fixture(autouse=True)
-def _fake_rag_backends(tmp_path, monkeypatch):
-    """
-    Replace embeddings/LLM with deterministic fakes, and redirect FAISS/upload
-    storage to a per-test temp directory, so document + ask tests run fully
-    offline and don't leak state between test runs.
-    """
-    import app.rag.vector_store.faiss_store as faiss_store_module
-    import app.services.document_service as document_service_module
-    import app.services.rag_service as rag_service_module
-    from app.core.config import settings
 
     fake_embedder = FakeEmbeddingProvider()
-
     monkeypatch.setattr(document_service_module, "get_embedding_provider", lambda: fake_embedder)
     monkeypatch.setattr(rag_service_module, "get_embedding_provider", lambda: fake_embedder)
     monkeypatch.setattr(faiss_store_module, "get_embedding_provider", lambda: fake_embedder)
+    monkeypatch.setattr(search_service_module, "get_embedding_provider", lambda: fake_embedder)
     monkeypatch.setattr(rag_service_module, "get_llm_provider", lambda: FakeLLM())
 
-    monkeypatch.setattr(settings, "FAISS_INDEX_DIR", str(tmp_path / "faiss_index"))
-    monkeypatch.setattr(settings, "UPLOAD_DIR", str(tmp_path / "uploads"))
-
-    # The fake embedder is a crude bag-of-words hash, not a real semantic
-    # model — it can't recognize "isolate" and "isolates" as related the way
-    # a real embedding model would, so raw similarity scores run lower than
-    # production. Lower the threshold here so these tests verify the
-    # retrieval/citation/answer *pipeline wiring*, not similarity tuning.
-    monkeypatch.setattr(settings, "CONFIDENCE_THRESHOLD", 0.1)
-
-
-async def _override_get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with TestSessionLocal() as session:
-        yield session
-
-
-app.dependency_overrides[get_db] = _override_get_db
-
-
-@pytest_asyncio.fixture
-async def client() -> AsyncGenerator[AsyncClient, None]:
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
+    async with AsyncClient(transport=transport, base_url="http://test") as async_client:
+        yield async_client
+
+    await engine.dispose()
 
 
 @pytest_asyncio.fixture
-async def auth_headers(client: AsyncClient) -> dict[str, str]:
-    """Register + log in a fresh user, return Authorization headers for it."""
-    payload = {"email": "ragtest@example.com", "full_name": "RAG Tester", "password": "supersecret123"}
-    await client.post("/api/v1/register", json=payload)
-    r = await client.post("/api/v1/login", json={"email": payload["email"], "password": payload["password"]})
-    token = r.json()["access_token"]
+async def auth_headers(client):
+    register_payload = {
+        "email": "ragtest@example.com",
+        "full_name": "RAG Test User",
+        "password": "supersecret123",
+    }
+    await client.post("/api/v1/register", json=register_payload)
+    token_response = await client.post(
+        "/api/v1/login",
+        json={"email": register_payload["email"], "password": register_payload["password"]},
+    )
+    token = token_response.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}

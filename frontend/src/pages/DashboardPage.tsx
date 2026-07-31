@@ -55,7 +55,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 pb-24 md:pb-8">
       {/* Welcome Banner */}
       <div className="relative rounded-3xl p-8 bg-gradient-to-r from-[#0E1422] via-[#12192B] to-[#0A0D16] overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-royal-sky/15 rounded-full blur-3xl pointer-events-none" />

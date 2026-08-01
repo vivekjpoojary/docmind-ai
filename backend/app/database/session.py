@@ -70,13 +70,22 @@ async def init_db() -> None:
         result = await session.execute(select(User))
         users = result.scalars().all()
         if not users:
-            admin_user = User(
-                email="admin@docmind.ai",
-                hashed_password=hash_password("REDACTED_PASSWORD"),
-                full_name="Vivek Poojary (Admin)",
-                is_admin=True,
-                is_active=True,
-            )
-            session.add(admin_user)
-            await session.commit()
+            import os
+            from app.core.logging import logger
+            admin_email = os.environ.get("ADMIN_EMAIL")
+            admin_password = os.environ.get("ADMIN_PASSWORD")
+
+            if not admin_email or not admin_password:
+                logger.info("ADMIN_EMAIL or ADMIN_PASSWORD not set in environment; skipping automatic initial admin account creation.")
+            else:
+                admin_user = User(
+                    email=admin_email.strip(),
+                    hashed_password=hash_password(admin_password),
+                    full_name="System Administrator",
+                    is_admin=True,
+                    is_active=True,
+                )
+                session.add(admin_user)
+                await session.commit()
+                logger.info(f"Seeded initial admin user: {admin_email}")
 

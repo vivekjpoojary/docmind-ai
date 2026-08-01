@@ -91,6 +91,18 @@ app.include_router(search_router, prefix=settings.API_V1_PREFIX)
 app.include_router(admin_router, prefix=settings.API_V1_PREFIX)
 
 
+@app.get("/", tags=["System"])
+async def root():
+    """Root API landing endpoint."""
+    return {
+        "status": "ok",
+        "app": settings.APP_NAME,
+        "env": settings.APP_ENV,
+        "docs": "/api/docs",
+        "health": "/api/health",
+    }
+
+
 @app.get("/api/health", tags=["System"])
 async def health_check():
     """Lightweight liveness/readiness probe for Docker/K8s/monitoring."""

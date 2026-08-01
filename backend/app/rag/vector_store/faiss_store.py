@@ -106,6 +106,18 @@ class UserVectorStore:
             self._persist()
             logger.info(f"Added {len(vector_ids)} vectors to user {self.user_id}'s FAISS index")
 
+    @property
+    def ntotal(self) -> int:
+        return self._index.ntotal
+
+    def add_texts(self, texts: list[str], chunk_ids: list[str]) -> None:
+        """Helper to embed texts and add them to FAISS vector store."""
+        if not texts:
+            return
+        provider = get_embedding_provider()
+        embeddings = provider.embed_documents(texts)
+        self.add(vector_ids=chunk_ids, embeddings=embeddings)
+
     def search(self, query_embedding: list[float], top_k: int) -> list[tuple[str, float]]:
         """Return up to top_k (vector_id, similarity_score) pairs, best first."""
         if self._index.ntotal == 0:

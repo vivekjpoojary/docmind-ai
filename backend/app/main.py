@@ -30,6 +30,15 @@ async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.APP_NAME} in {settings.APP_ENV} mode")
     await init_db()
     logger.info("Database initialized")
+    try:
+        from app.database.session import AsyncSessionLocal
+        from app.services.document_service import rebuild_missing_faiss_indices
+
+        async with AsyncSessionLocal() as session:
+            await rebuild_missing_faiss_indices(session)
+    except Exception as exc:
+        logger.warning(f"FAISS startup index sync warning: {exc}")
+
     yield
     logger.info("Application shutting down")
 

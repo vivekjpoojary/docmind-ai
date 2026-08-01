@@ -138,3 +138,36 @@ class DocumentService:
 
         await self.documents.delete(document)
         logger.info(f"Document deleted: {document.filename} (id={document.id})")
+
+
+async def rebuild_missing_faiss_indices(db: AsyncSession) -> None:
+    """
+    Automatic recovery helper for ephemeral storage environments (Render):
+    Checks if any processed document chunks exist in DB whose user FAISS index files
+    are missing on disk. If missing, rebuilds the FAISS vector index from stored DB chunks.
+    """
+    from sqlalchemy import select
+    result = await db.execute(select(DocumentChunk))
+    chunks = result.scalars().all()
+    if not chunks:
+        return
+
+    doc_result = await db.execute(select(Document))
+    docs = {d.id: d for d in doc_result.scalars().all()}
+
+    chunks_by_user: dict[str, list[DocumentChunk]] = {}
+    for chunk in chunks:
+        doc = docs.get(chunk.document_id)
+        if doc and doc.status == DocumentStatus.READY:
+            chunks_by_user.setdefault(doc.owner_id, []).append(chunk)
+
+    for user_id, user_chunks in chunks_by_user.items():
+        vstore = get_user_vector_store(user_id)
+        if vstore.ntotal == 0 and len(user_chunks) > 0:
+            logger.info(
+                f"Rebuilding missing FAISS vector index on startup for user {user_id} "
+                f"({len(user_chunks)} chunks)"
+            )
+            texts = [c.content for c in user_chunks]
+            chunk_ids = [c.id for c in user_chunks]
+            vstore.add_texts(texts=texts, chunk_ids=chunk_ids)

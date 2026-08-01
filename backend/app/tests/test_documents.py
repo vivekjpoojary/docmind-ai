@@ -10,6 +10,16 @@ def _txt_file(content: str, filename: str = "docker_guide.txt"):
 
 
 @pytest.mark.asyncio
+async def test_unauthenticated_guest_access_rejected(client):
+    """Verify that unauthenticated guest requests to RAG endpoints return 401 Unauthorized."""
+    r_ask = await client.post("/api/v1/ask", json={"question": "What is Docker?"})
+    assert r_ask.status_code == 401
+
+    r_docs = await client.get("/api/v1/documents")
+    assert r_docs.status_code == 401
+
+
+@pytest.mark.asyncio
 async def test_upload_txt_document_is_processed(client, auth_headers):
     content = "Docker isolates applications using containers that package all dependencies."
     r = await client.post("/api/v1/upload", files=_txt_file(content), headers=auth_headers)

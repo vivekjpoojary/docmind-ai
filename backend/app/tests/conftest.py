@@ -10,11 +10,13 @@ from app.core.config import settings
 from app.database import session as session_module
 from app.database.session import Base
 from app.main import app
+from app.middleware.rate_limit import limiter
 from app.tests.fakes import FakeEmbeddingProvider, FakeLLM
 
 
 @pytest_asyncio.fixture
 async def client(tmp_path, monkeypatch):
+    limiter.enabled = False
     db_path = tmp_path / "test_app.db"
     faiss_dir = tmp_path / "faiss_index"
     upload_dir = tmp_path / "uploads"

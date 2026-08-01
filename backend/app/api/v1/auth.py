@@ -1,10 +1,11 @@
 """Authentication endpoints."""
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
 from app.database.session import get_db
+from app.middleware.rate_limit import limiter
 from app.models.user import User
 from app.schemas.auth import Token, TokenRefreshRequest, UserCreate, UserLogin, UserRead
 from app.services.auth_service import AuthService
@@ -13,14 +14,16 @@ router = APIRouter(tags=["Authentication"])
 
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-async def register(payload: UserCreate, db: AsyncSession = Depends(get_db)):
+@limiter.limit("10/minute")
+async def register(request: Request, payload: UserCreate, db: AsyncSession = Depends(get_db)):
     """Create a new user account."""
     user = await AuthService(db).register(payload)
     return user
 
 
 @router.post("/login", response_model=Token)
-async def login(payload: UserLogin, db: AsyncSession = Depends(get_db)):
+@limiter.limit("10/minute")
+async def login(request: Request, payload: UserLogin, db: AsyncSession = Depends(get_db)):
     """Authenticate and receive an access + refresh token pair."""
     return await AuthService(db).login(payload)
 

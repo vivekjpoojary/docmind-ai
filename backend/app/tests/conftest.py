@@ -21,6 +21,7 @@ async def client(tmp_path, monkeypatch):
     faiss_dir = tmp_path / "faiss_index"
     upload_dir = tmp_path / "uploads"
 
+    monkeypatch.setattr(settings, "APP_ENV", "testing")
     monkeypatch.setattr(settings, "DATABASE_URL", f"sqlite+aiosqlite:///{db_path}")
     monkeypatch.setattr(settings, "FAISS_INDEX_DIR", str(faiss_dir))
     monkeypatch.setattr(settings, "UPLOAD_DIR", str(upload_dir))

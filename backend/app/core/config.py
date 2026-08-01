@@ -17,7 +17,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     # ---------------- Application ----------------
     APP_NAME: str = "DocMind AI"
-    APP_ENV: Literal["development", "staging", "production"] = "development"
+    APP_ENV: Literal["development", "staging", "production", "testing"] = "development"
     DEBUG: bool = True
     API_V1_PREFIX: str = "/api/v1"
 

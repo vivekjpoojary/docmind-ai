@@ -77,9 +77,13 @@ class OpenAIEmbeddings(EmbeddingProvider):
 @lru_cache
 def get_embedding_provider() -> EmbeddingProvider:
     """
-    Cached factory — the embedding model is loaded once per process
-    (loading sentence-transformers models is relatively expensive).
+    Cached factory — the embedding model is loaded once per process.
+    Returns FakeEmbeddingProvider in testing mode to avoid downloading ML models.
     """
+    if settings.APP_ENV == "testing":
+        from app.tests.fakes import FakeEmbeddingProvider
+        return FakeEmbeddingProvider()
+
     if settings.EMBEDDING_PROVIDER == "openai":
         if not settings.OPENAI_API_KEY:
             raise ValueError(

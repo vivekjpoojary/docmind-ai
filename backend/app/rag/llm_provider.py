@@ -106,6 +106,11 @@ class OpenAILLM(LLMProvider):
 
 def get_llm_provider() -> LLMProvider:
     live_settings = Settings()
+    if live_settings.APP_ENV == "testing":
+        from app.tests.fakes import FakeLLM
+
+        return FakeLLM()
+
     if live_settings.LLM_PROVIDER == "openai":
         return OpenAILLM(api_key=live_settings.OPENAI_API_KEY, model=live_settings.OPENAI_MODEL)
 

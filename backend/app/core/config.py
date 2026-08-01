@@ -36,15 +36,17 @@ class Settings(BaseSettings):
     CHROMA_PERSIST_DIR: str = "./data/chroma"
 
     # ---------------- Embeddings ----------------
-    EMBEDDING_PROVIDER: Literal["sentence_transformers", "openai"] = "sentence_transformers"
+    EMBEDDING_PROVIDER: Literal["sentence_transformers", "openai", "fastembed"] = "sentence_transformers"
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
 
     # ---------------- LLM ----------------
-    LLM_PROVIDER: Literal["ollama", "openai"] = "ollama"
+    LLM_PROVIDER: Literal["ollama", "openai", "groq"] = "ollama"
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "llama3.1"
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-4o-mini"
+    GROQ_API_KEY: str = ""
+    GROQ_MODEL: str = "llama-3.1-8b-instant"
 
     # ---------------- RAG ----------------
     CHUNK_SIZE: int = 1000

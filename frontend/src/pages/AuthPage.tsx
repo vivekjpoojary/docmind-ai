@@ -3,7 +3,11 @@ import { Brain, Lock, Mail, User as UserIcon, ArrowRight, ShieldCheck, Sparkles,
 import { authApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-export const AuthPage: React.FC = () => {
+interface AuthPageProps {
+  onSuccess?: () => void;
+}
+
+export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,6 +29,9 @@ export const AuthPage: React.FC = () => {
         await authApi.register(email, password, fullName);
         const tokens = await authApi.login(email, password);
         await login(tokens);
+      }
+      if (onSuccess) {
+        onSuccess();
       }
     } catch (err: any) {
       console.error('Authentication failed:', err);

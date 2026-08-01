@@ -8,6 +8,7 @@ import {
   Shield,
   LayoutDashboard,
   LogOut,
+  LogIn,
   Command,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -18,9 +19,15 @@ interface NavbarProps {
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
   onOpenCommandPalette?: () => void;
+  onOpenAuthModal?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenCommandPalette }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  activeTab,
+  setActiveTab,
+  onOpenCommandPalette,
+  onOpenAuthModal,
+}) => {
   const { user, logout } = useAuth();
 
   const navItems = [
@@ -65,30 +72,28 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenC
             </div>
 
             {/* Desktop Navigation Tabs */}
-            {user && (
-              <nav className="hidden md:flex items-center space-x-1 bg-[#0E1422] p-1 rounded-2xl border border-white/[0.06] shrink-0">
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveTab(item.id as TabType)}
-                      className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-150 whitespace-nowrap ${
-                        isActive
-                          ? 'bg-gradient-to-r from-royal-violet/30 to-royal-sky/20 text-white font-semibold border border-royal-sky/40 shadow-[0_0_15px_rgba(56,189,248,0.2)]'
-                          : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
-                      }`}
-                    >
-                      <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-royal-sky' : 'text-slate-400'}`} />
-                      <span>{item.label}</span>
-                    </button>
-                  );
-                })}
-              </nav>
-            )}
+            <nav className="hidden md:flex items-center space-x-1 bg-[#0E1422] p-1 rounded-2xl border border-white/[0.06] shrink-0">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id as TabType)}
+                    className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-150 whitespace-nowrap ${
+                      isActive
+                        ? 'bg-gradient-to-r from-royal-violet/30 to-royal-sky/20 text-white font-semibold border border-royal-sky/40 shadow-[0_0_15px_rgba(56,189,248,0.2)]'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
+                    }`}
+                  >
+                    <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-royal-sky' : 'text-slate-400'}`} />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
 
-            {/* Right Section: Command Palette Trigger & User Avatar */}
+            {/* Right Section: Command Palette Trigger & User Avatar / Sign In */}
             <div className="flex items-center space-x-3 shrink-0">
               {onOpenCommandPalette && (
                 <button
@@ -128,35 +133,41 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenC
                     <LogOut className="w-4 h-4" />
                   </button>
                 </div>
-              ) : null}
+              ) : (
+                <button
+                  onClick={onOpenAuthModal}
+                  className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-gradient-to-r from-royal-violet to-royal-sky text-white font-semibold text-xs shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:opacity-90 transition-all"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Sign In</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
       </header>
 
       {/* Mobile Bottom Navigation Bar for iOS & Android */}
-      {user && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#090D16]/95 backdrop-blur-2xl border-t border-white/10 px-2 py-1.5 md:hidden flex items-center justify-around shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id as TabType)}
-                className={`flex flex-col items-center py-1 px-2.5 rounded-xl text-[10px] font-mono font-bold transition-all ${
-                  isActive
-                    ? 'text-royal-sky bg-royal-sky/15 border border-royal-sky/30'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Icon className="w-4 h-4 mb-0.5" />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#090D16]/95 backdrop-blur-2xl border-t border-white/10 px-2 py-1.5 md:hidden flex items-center justify-around shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id as TabType)}
+              className={`flex flex-col items-center py-1 px-2.5 rounded-xl text-[10px] font-mono font-bold transition-all ${
+                isActive
+                  ? 'text-royal-sky bg-royal-sky/15 border border-royal-sky/30'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Icon className="w-4 h-4 mb-0.5" />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </>
   );
 };

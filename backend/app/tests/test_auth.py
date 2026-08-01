@@ -63,3 +63,27 @@ async def test_health_check(client):
     r = await client.get("/api/health")
     assert r.status_code == 200
     assert r.json()["status"] == "ok"
+
+
+@pytest.mark.asyncio
+async def test_ip_spoofing_does_not_bypass_rate_limiter(client):
+    """
+    Verify that prepending fake IPs in X-Forwarded-For does not bypass
+    the rate limiter when the true client IP (rightmost IP) is identical.
+    """
+    from app.middleware.rate_limit import limiter
+    limiter.enabled = True
+    try:
+        payload = {"email": "spoof@example.com", "password": "wrongpassword"}
+        for i in range(10):
+            fake_ip = f"192.168.1.{i}"
+            # Prepend fake IP to X-Forwarded-For, rightmost is real client IP "203.0.113.195"
+            headers = {"X-Forwarded-For": f"{fake_ip}, 203.0.113.195"}
+            await client.post("/api/v1/login", json=payload, headers=headers)
+
+        # 11th request from the same rightmost IP must trigger 429 Rate Limit Exceeded
+        headers = {"X-Forwarded-For": "10.9.8.7, 203.0.113.195"}
+        r = await client.post("/api/v1/login", json=payload, headers=headers)
+        assert r.status_code == 429
+    finally:
+        limiter.enabled = False

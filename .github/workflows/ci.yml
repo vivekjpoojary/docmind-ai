@@ -34,7 +34,7 @@ jobs:
       - name: Run Backend Pytest Suite
         run: |
           cd backend
-          PYTHONPATH=. pytest app/tests -v
+          APP_ENV=testing PYTHONPATH=. pytest app/tests -v
 
   build-frontend:
     name: Frontend Build Check

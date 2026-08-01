@@ -134,7 +134,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@docmind.ai"
+                  placeholder="alex.mercer@company.com"
                   className="glass-input w-full pl-9 pr-4 py-2.5 rounded-xl text-white font-sans text-xs focus:outline-none"
                 />
               </div>

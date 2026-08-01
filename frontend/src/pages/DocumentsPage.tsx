@@ -50,11 +50,17 @@ export const DocumentsPage: React.FC = () => {
       await fetchDocuments();
     } catch (err: any) {
       console.error('Upload failed:', err);
+      const status = err.response?.status;
       const detail = err.response?.data?.detail;
-      if (typeof detail === 'string') {
+
+      if (status === 401) {
+        setError("Authentication required: Please click 'Sign In' at the top of the header to log in before uploading documents.");
+      } else if (typeof detail === 'string') {
         setError(detail);
       } else if (Array.isArray(detail) && detail.length > 0) {
         setError(detail.map((item: any) => item.msg || JSON.stringify(item)).join('. '));
+      } else if (err.message) {
+        setError(`${err.message}. Please verify file is PDF, DOCX, or TXT under 25MB.`);
       } else {
         setError('Document upload failed. Ensure the file is a PDF, DOCX, or TXT under 25MB.');
       }

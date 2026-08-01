@@ -40,6 +40,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
         setError(detail);
       } else if (Array.isArray(detail) && detail.length > 0) {
         setError(detail.map((item: any) => item.msg || JSON.stringify(item)).join('. '));
+      } else if (err.message) {
+        setError(`${err.message} (Unable to reach API server)`);
       } else {
         setError('Authentication failed. Please check your credentials.');
       }

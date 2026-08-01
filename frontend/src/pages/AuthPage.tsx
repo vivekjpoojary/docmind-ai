@@ -41,7 +41,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
       } else if (Array.isArray(detail) && detail.length > 0) {
         setError(detail.map((item: any) => item.msg || JSON.stringify(item)).join('. '));
       } else if (err.message) {
-        setError(`${err.message} (Unable to reach API server)`);
+        setError("Backend server is waking up from free-tier sleep (~30s). Please wait a moment and click Sign In again!");
       } else {
         setError('Authentication failed. Please check your credentials.');
       }

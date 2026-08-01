@@ -10,6 +10,9 @@ jobs:
   test-backend:
     name: Backend Test Suite
     runs-on: ubuntu-latest
+    env:
+      SECRET_KEY: "test-secret-key-for-ci-only-not-real-123456789"
+      APP_ENV: "testing"
 
     steps:
       - name: Checkout Code
@@ -34,7 +37,7 @@ jobs:
       - name: Run Backend Pytest Suite
         run: |
           cd backend
-          APP_ENV=testing PYTHONPATH=. pytest app/tests -v
+          PYTHONPATH=. pytest app/tests -v
 
   build-frontend:
     name: Frontend Build Check

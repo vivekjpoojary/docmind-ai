@@ -2,6 +2,12 @@
   "name": "docmind-ai-frontend",
   "private": true,
   "version": "1.0.0",
+  "description": "DocMind AI — Enterprise Document Intelligence & RAG Workstation Frontend",
+  "author": "Vivek J Poojary",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vivekjpoojary/docmind-ai.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

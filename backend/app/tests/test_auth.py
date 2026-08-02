@@ -66,6 +66,13 @@ async def test_health_check(client):
 
 
 @pytest.mark.asyncio
+async def test_security_headers_present(client):
+    r = await client.get("/api/health")
+    assert r.headers.get("X-Content-Type-Options") == "nosniff"
+    assert r.headers.get("X-Frame-Options") == "DENY"
+
+
+@pytest.mark.asyncio
 async def test_ip_spoofing_does_not_bypass_rate_limiter(client):
     """
     Verify that prepending fake IPs in X-Forwarded-For does not bypass

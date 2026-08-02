@@ -12,7 +12,13 @@ from app.services.document_service import DocumentService
 router = APIRouter(tags=["Documents"])
 
 
-@router.post("/upload", response_model=DocumentUploadResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/upload",
+    response_model=DocumentUploadResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Upload & Index Document",
+    description="Upload a PDF, DOCX, or TXT document for automated text extraction, chunking, and FAISS vector indexing.",
+)
 async def upload_document(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),

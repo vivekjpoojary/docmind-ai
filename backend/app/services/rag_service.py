@@ -50,6 +50,11 @@ class RAGService:
             (vector_id, score) for vector_id, score in raw_results
             if score >= settings.CONFIDENCE_THRESHOLD
         ]
+        top_score = max([score for _, score in relevant_results], default=0.0)
+        logger.info(
+            f"RAG Retrieval: raw_hits={len(raw_results)}, "
+            f"passed_confidence={len(relevant_results)}, top_score={top_score:.4f}"
+        )
 
         vector_ids = [vid for vid, _ in relevant_results]
         chunk_rows = await self.documents.get_chunks_by_vector_ids(vector_ids)

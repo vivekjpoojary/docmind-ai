@@ -208,8 +208,14 @@ export const DocumentsPage: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="p-8 text-center text-slate-400 font-mono text-xs">
-            Querying document repository database...
+          <div className="p-6 space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-12 bg-white/[0.03] border border-white/5 rounded-xl animate-pulse flex items-center justify-between px-6">
+                <div className="h-3 w-1/4 bg-white/10 rounded" />
+                <div className="h-3 w-1/6 bg-white/10 rounded" />
+                <div className="h-3 w-1/12 bg-white/10 rounded" />
+              </div>
+            ))}
           </div>
         ) : documents.length === 0 ? (
           <div className="p-12 text-center text-slate-400 text-xs font-mono space-y-2">
